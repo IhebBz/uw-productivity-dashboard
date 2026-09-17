@@ -63,7 +63,7 @@ def get_metrics():
 def dashboard_preview():
     """A minimal, self-refreshing page - just enough to see the numbers update."""
     return """
-    <html><head><meta http-equiv="refresh" content="5"></head>
+    <html><head><meta http-equiv="refresh" content="60"></head>
     <body style="font-family: Arial; padding: 2rem;">
       <h2>UW Productivity Dashboard - local preview</h2>
       <p>This page reloads every 5 seconds and always shows the latest
