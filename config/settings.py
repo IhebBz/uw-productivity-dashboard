@@ -6,6 +6,9 @@ never as a hand-copied literal somewhere inside a metric function.
 
 # Which XFI Policy Status values count as "quoted" or "bound" (DSR side).
 # RBS never needs this list - every RBS row is already bound.
+# Tab 3, Rule 2: one agreed list of "won" statuses, matching what actually
+# ends up in RBS. Checked against the real extracts: every DSR policy with a
+# bound status appears in RBS, and almost no policy with any other does.
 QUOTED_STATUSES = {
     "Bound", "Cancelled", "Firm Order Noted", "Live Policy",
     "Non Renewed", "Quote", "Quote NTU", "Renewed",
@@ -15,18 +18,32 @@ BIND_STATUSES = {
     "Non Renewed", "Renewed",
 }
 
-# Below these sample sizes, a rate is withheld rather than shown - a rate
-# built on a handful of deals is noise, not a finding.
-MIN_SUBMISSIONS_FOR_RATE = 20
-MIN_QUOTES_FOR_BIND_RATE = 20
-MIN_BINDS_FOR_DEAL_SIZE = 5
-
-# How big a gap between DSR and RBS, on the same scope, is worth flagging
-# rather than treated as normal rounding/timing noise (see reconcile/).
+# How big a gap between DSR and RBS, on the same scope, is worth flagging.
+# Tab 3, Rule 6: "a small gap, a percent or two - expected and fine"
+# (see reconcile/).
 RECONCILIATION_TOLERANCE_PCT = 0.02
 
 # Comparison window: current year vs. the prior year, same months.
 COMPARISON_YEARS_BACK = 1
+
+# What the dashboard opens on, and what "Reset" goes back to (workbook tab 7).
+# Matt's build opens on New + Open Market, because that's the slice his LOB
+# workbook reconciles to. We don't have that workbook, and our stand-in
+# headcount follows every filter anyway, so we open on the whole book. Set
+# these to "New" / "Open Market" to open the way Matt's does.
+DEFAULT_TIMEFRAME = "ytd"          # "ytd" or "ttm"
+DEFAULT_BUSINESS_TYPE = None       # None (All), "New" or "Renewal"
+DEFAULT_PLACEMENT = None           # None (All), "Open Market", "Facility/DUA" or "Agreement"
+DEFAULT_DATE_BASIS = "inception"   # "inception" or "submission"
+
+# Broker Concentration (workbook tab 5): share of premium with the top N brokers.
+BROKER_CONCENTRATION_TOP_N = 5
+
+# Peer comparison (workbook tab 4): Matt's build leaves anyone who wrote no
+# premium out when working out the peer median, so a zero doesn't drag the
+# middle figure down. The workbook asks for this to be a deliberate choice -
+# it's a setting so the choice is visible and one line to change.
+PEER_MEDIAN_EXCLUDES_ZERO_PREMIUM = True
 
 # Not usable without the HR file, kept here so the moment HR access exists,
 # this is the only place that needs filling in.

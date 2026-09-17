@@ -7,7 +7,8 @@ import logging
 
 import pandas as pd
 
-from config.field_map import column_for
+from config.field_map import column_for, normalise_entity
+from ingest.underwriter_names import normalise_underwriter_name
 from ingest.validation import require_columns, warn_if_coercion_dropped_data
 
 logger = logging.getLogger(__name__)
@@ -18,7 +19,7 @@ REQUIRED_COLUMNS = [
     "Agency GELR (%)", "Business Plan Loss Ratio (%)", "Original Commission (%)",
     "Excess (USD)", "Deductible (USD)", "Agency Exposure (USD)", "Inception Date",
     "Slip Lead", "Producing Underwriter Name", "Underwriter Name",
-    "Producing Mosaic Entity",
+    "Producing Mosaic Entity", "Policy Reference",
 ]
 
 # Total Fees / Syndicate Fees / SCM Fees are deliberately NOT required here -
@@ -33,6 +34,16 @@ PERCENT_COLUMN_ANCHORS = ["Agency GELR (%)", "Original Commission (%)",
 # load-bearing for the rest of the pipeline.
 RARC_COLUMN = "Risk Adjusted Rate Change (%)"
 EXPIRED_PREMIUM_COLUMN = "Expired Gross Premium Agency (USD) of previous policy"
+
+# Read but not required, same reasoning as RARC above. Shared name -> raw
+# RBS column. Each feeds one metric; see the metrics workbook, tab 8.
+OPTIONAL_COLUMNS = {
+    "agency_share": "Agency Line/Share (%)",                               # Average Agency Share
+    "mosaic_1609_premium": "Mosaic 1609 Share Gross Written Premium (USD)",  # SCM Share
+    "mosaic_1609_benchmark": "Mosaic 1609 Share Benchmark Premium (USD)",    # Rate Adequacy double-check
+    "broker": "Broker Name",                                              # Broker Concentration
+    "tenor_months": "Tenor in Months",                                    # Average Policy Length
+}
 
 # After scaling, a real book's GELR should sit somewhere in this range. If it
 # doesn't, the unit decision below was wrong - stop rather than publish a
@@ -107,10 +118,14 @@ def clean_rbs(raw: pd.DataFrame) -> pd.DataFrame:
     require_columns(raw, REQUIRED_COLUMNS, "RBS")
 
     df = _percent_columns_to_percent_units(raw)
-    df["policy_reference"] = df["Policy Reference"] if "Policy Reference" in df.columns else None
-    df["underwriter"] = df[column_for("underwriter", "rbs")].fillna(
+    # Required, not optional: every bind count (tab 4, "Binds") is a count of
+    # distinct Policy References, so without it binds would silently read 0.
+    df["policy_reference"] = df[column_for("policy_reference", "rbs")]
+    # Tab 3, Rule 5 - same name clean-up as clean_dsr.py, so both sides match.
+    df["underwriter_raw"] = df[column_for("underwriter", "rbs")].fillna(
         df[column_for("underwriter_fallback", "rbs")])
-    df["entity"] = df[column_for("entity", "rbs")]
+    df["underwriter"] = df["underwriter_raw"].map(normalise_underwriter_name)
+    df["entity"] = df[column_for("entity", "rbs")].map(normalise_entity)
     df["line_of_business"] = df[column_for("line_of_business", "rbs")]
     df["business_type"] = df[column_for("business_type", "rbs")]
     df["placement"] = df[column_for("placement", "rbs")]
@@ -124,16 +139,36 @@ def clean_rbs(raw: pd.DataFrame) -> pd.DataFrame:
     df["inception_date"] = pd.to_datetime(raw_inception, errors="coerce")
     warn_if_coercion_dropped_data(raw_inception, df["inception_date"], "RBS")
 
+    # gelr keeps its blanks - the margin version of GELR (tab 4) needs to tell a
+    # blank apart from a real figure. gelr_ok marks "a usable GELR figure".
     df["gelr"] = pd.to_numeric(df["Agency GELR (%)"], errors="coerce")
     df["gelr_ok"] = df["gelr"].notna() & df["gelr"].ne(0)
-    # Blank commission = 0 is a stated business rule (metrics workbook, tab 4),
-    # not a shortcut - Original Commission (%) being genuinely absent means no
-    # commission was charged, so it isn't the same kind of gap as a premium or
-    # date failing to parse, and is filled here without a warning on purpose.
+    # Commission is filled with 0 here because tab 4 defines the book version
+    # as an average "across all rows" - a blank row still counts, as no
+    # recorded commission. The same treatment is applied to GELR's book
+    # version in metrics/quality.py.
     df["commission"] = pd.to_numeric(df["Original Commission (%)"], errors="coerce").fillna(0)
     df["plan_loss_ratio"] = pd.to_numeric(df["Business Plan Loss Ratio (%)"], errors="coerce")
     df["layer_type"] = df["Type of Layer"]
     df["slip_lead"] = df["Slip Lead"]
+    # Attachment point and limit (tab 4). Deductible keeps its blanks here;
+    # the Primary attachment point treats a blank as 0 in metrics/quality.py,
+    # where that catch is written down next to the figure it affects.
+    df["excess"] = pd.to_numeric(df["Excess (USD)"], errors="coerce")
+    df["deductible"] = pd.to_numeric(df["Deductible (USD)"], errors="coerce")
+    df["exposure"] = pd.to_numeric(df["Agency Exposure (USD)"], errors="coerce")
+
+    # Optional columns for the rest of tab 4 and tab 5. A missing one turns
+    # its own metric blank rather than stopping the whole run.
+    for name, column in OPTIONAL_COLUMNS.items():
+        if column not in df.columns:
+            logger.warning("RBS: column '%s' not in this extract - %s will be blank.",
+                           column, name)
+            df[name] = None
+        elif name == "broker":
+            df[name] = df[column]
+        else:
+            df[name] = pd.to_numeric(df[column], errors="coerce")
 
     # Both optional: not every extract carries them, and RARC is one metric
     # among many rather than something the rest of the pipeline depends on.

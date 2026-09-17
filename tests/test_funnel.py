@@ -22,13 +22,22 @@ def _rbs(rows):
     return df
 
 
-def test_quote_rate_is_none_below_the_minimum_sample_size():
-    """quote_rate() should return None, not a number, on too few submissions."""
+def test_quote_rate_is_blank_only_when_there_are_no_submissions():
+    """Tab 4: Q/S is blank (None, not zero) if there were no submissions - and
+    a real number otherwise, however few submissions there were."""
     dsr = _dsr([
         {"policy_reference": "P1", "status": "Quote", "inception_date": "2025-01-01"},
+        {"policy_reference": "P2", "status": "Declined", "inception_date": "2025-01-01"},
     ])
-    result = funnel.quote_rate(dsr, Scope())
-    assert result is None  # only 1 submission, floor is MIN_SUBMISSIONS_FOR_RATE (20)
+    assert funnel.quote_rate(dsr, Scope()) == 1 / 2
+    assert funnel.quote_rate(dsr, Scope(year=2030)) is None  # nothing in scope
+
+
+def test_bind_rate_is_blank_when_there_are_no_quotes():
+    """Tab 4: B/Q is blank (None, not zero) if there were no quotes."""
+    dsr = _dsr([{"policy_reference": "P1", "status": "Declined", "inception_date": "2025-01-01"}])
+    rbs = _rbs([{"policy_reference": "P9", "inception_date": "2025-01-01"}])
+    assert funnel.bind_rate(dsr, rbs, Scope()) is None
 
 
 def test_bind_rate_uses_rbs_not_dsr_binds():

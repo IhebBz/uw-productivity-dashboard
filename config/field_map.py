@@ -36,3 +36,21 @@ def column_for(concept: str, source: str) -> str:
     if source not in FIELD_MAP[concept]:
         raise KeyError(f"'{source}' is not a valid source for '{concept}'. Use 'dsr' or 'rbs'.")
     return FIELD_MAP[concept][source]
+
+
+# Tab 3, Rule 2, "Which entity wrote it": same field on both sides, "same
+# clean-up rule applied to both sides". Comparing the real extracts showed DSR
+# and RBS name two entities differently - DSR's spelling is mapped onto RBS's,
+# since RBS is the source of truth for bound business (Rule 6).
+ENTITY_ALIASES = {
+    "Mosaic Syndicate 2610": "Mosaic 2610",
+    "Mosaic Syndicate 5431 (EEA)": "Mosaic 5431",
+}
+
+
+def normalise_entity(name):
+    """Trim stray spaces and map a known alternate spelling onto the RBS name."""
+    if name is None or name != name:  # None or NaN
+        return None
+    cleaned = " ".join(str(name).split())
+    return ENTITY_ALIASES.get(cleaned, cleaned)

@@ -1,4 +1,4 @@
-# UW Productivity Dashboard (RBS-only quality metrics + DSR funnel)
+# UW Productivity Dashboard (DSR funnel + RBS quality metrics)
 
 Rebuild of Matt Radus's UW Productivity Dashboard prototype, scoped to what
 the company's real data can actually support today. Full background and
@@ -42,11 +42,12 @@ change - they only ever depend on the `DataSource` interface in
    - **One-off check**: `python run_pipeline_once.py` - prints a summary
      and saves the full result to `outputs/latest_result.json`.
    - **Background mode** (mimics how this runs inside MosAIc Chat):
-     `uvicorn server.app:app --reload`, then open `http://localhost:8000`.
-     A background thread reruns the pipeline every 5 minutes (see
+     `python run_server.py`, then open `http://localhost:8000`. A
+     background thread re-reads the data every 5 minutes (see
      `REFRESH_SECONDS` in `server/app.py` - a stand-in for "daily"); the
-     page and the `/metrics` endpoint always show the latest run without
-     you doing anything.
+     page works out the figures for whatever filters are picked. If port
+     8000 is already taken (an older copy still running), stop that one
+     first.
 
 Watch the terminal output either way - reconciliation gaps and data
 problems are logged as warnings, not hidden (see Audit notes below).
@@ -57,24 +58,71 @@ problems are logged as warnings, not hidden (see Audit notes below).
 |---|---|
 | `config/` | Every fixed threshold, status list, and the DSR<->RBS field name translation. |
 | `data_sources/` | Where the data physically comes from. The swap point. |
-| `scope/` | The single shared filter definition ("Scope"), applied the same way to both reports. |
+| `scope/` | The single shared filter definition ("Scope"), time windows, and dropdown choices - applied the same way to both reports. |
 | `ingest/` | Cleans each raw report into a usable shape. No metrics computed here. |
 | `reconcile/` | Compares DSR and RBS on the same scope; RBS's figure wins. |
-| `metrics/` | One file per category from the metrics workbook: funnel, quality, composition, headcount. |
-| `pipeline/` | Ties everything together into one runnable build. |
+| `metrics/` | One file per category from the metrics workbook: funnel, premium, quality, composition, headcount, underwriters. |
+| `pipeline/` | Ties everything together: `prepare()` (read and clean, once) and `compute()` (every metric for one set of filters). |
+| `server/` | The dashboard page, its filter bar, and the background refresh. |
 | `tests/` | One test file per module that has real logic worth checking. |
 
 ## Status
 
-Core logic is implemented and tested against real sample data: ingest,
-scope filtering, reconciliation, and most of `metrics/` (funnel, quality,
-headcount, and the first two of `composition/`). `metrics/composition.py`
-has three functions still stubbed (`broker_concentration`,
-`average_policy_tenor`, `renewal_premium_growth`) - each needs one more raw
-column added to `clean_rbs.py` first.
+The metrics workbook is the tracker - **tab 8 (Build tracker)** lists every
+rule and metric, its status, where it lives in the code, its test, and its
+current value on real data. **Tab 9** lists every judgement call and open
+question. Keep both up to date when something changes; this section is only a
+summary.
 
-Run `python -m pytest` from the project root to check the reconciliation and
-funnel logic still behaves as expected after any change.
+- **Tab 3 (Making DSR + RBS agree):** all seven rules done. Rule 5
+  (underwriter spelling) is a known partial fix.
+- **Tab 4 (What we CAN build):** every metric built and on the dashboard.
+- **Tab 5 (New ideas):** every idea built and on the dashboard.
+- **Tab 6 (What we CAN'T build):** deliberately not in the code.
+- **Tab 7 (Filters):** every filter from Matt's build except Product (needs
+  his product mapping) and Role / Tenure (need the HR file) - those show
+  greyed out with the reason.
+
+Run `python -m pytest` from the project root - the tests cover the tab 3
+rules, every metric, the filters, and that the page renders for every kind
+of view.
+
+## Dashboard filters
+
+The filter bar mirrors Matt's build (workbook tab 7 has the full comparison):
+Timeframe (YTD / TTM), Year, Months, Business, Placement, Date basis, Line of
+business, Entity and Underwriter. Every figure is shown next to the same
+period one year earlier, with the change.
+
+How it's built:
+
+| Piece | Where |
+|---|---|
+| One filter definition, applied to both reports | `Scope` and `apply_scope` in `scope/filter.py` |
+| Time windows, last complete month, prior year, labels | `scope/period.py` |
+| Dropdowns that only offer what's still possible | `scope/options.py` |
+| Page address <-> filter choices, defaults, clearing a stranded choice | `server/filters.py` |
+| What the page opens on | `DEFAULT_...` in `config/settings.py` |
+| Every figure on the page, its label and note | `SECTIONS` in `server/dashboard.py` |
+
+Filters live in the page address (e.g. `/?tf=ttm&bt=New&lob=Cyber`), so a
+view can be bookmarked or shared. `/metrics` takes the same parameters and
+returns JSON.
+
+**Submission date basis** only shows DSR-only figures (Submissions, Quotes,
+Quote rate, Roster underwriters). RBS has no submission date, so anything
+needing RBS is blank with a note rather than quietly mixing two different
+months (tab 3, Rule 3).
+
+**Speed.** The server reads and cleans the data once per refresh
+(`prepare()` in `pipeline/build_dashboard_data.py`), keeping only the
+cleaned columns plus fast filter copies (`add_filter_columns` in
+`scope/filter.py`). A new filter combination then takes about 1-2 seconds
+on the full extract, and a repeat is instant.
+
+**To add a metric:** write it in `metrics/` with a test, add it to
+`compute()` in `pipeline/build_dashboard_data.py`, add one line to
+`SECTIONS` in `server/dashboard.py`, then add a row to workbook tab 8.
 
 ## Verified against a real full extract
 
@@ -84,41 +132,41 @@ Ran end to end against a genuine full-scale DSR/RBS pull (144k DSR rows,
 | Metric | Value |
 |---|---|
 | Submissions / Quotes / Binds | 144,347 / 56,063 / 26,119 |
+| Q/S / B/Q / B/S | 38.8% / 46.6% / 18.1% |
 | Bound Premium (RBS, kept) | $3.05B |
 | UW Margin % | 42.6% |
-| GELR / Commission | 40.6% / 16.7% |
-| Rate Adequacy | 129.2% |
+| GELR book / margin version | 40.55% / 40.63% |
+| Commission book / margin version | 16.7% / 16.7% |
+| Rate Adequacy | 129.0% |
 | RARC (renewals) | 98.0% |
-| Active Underwriters / Roster Underwriters | 167 / 180 |
+| Active / Roster underwriters (stand-ins) | 167 / 180 |
 
 Two reconciliation gaps were flagged (both logged as warnings, not hidden):
-bound premium 11.9% apart, bind count 3.7% apart, DSR vs RBS. Both are far
-more reasonable than the earlier sample data's gaps (which ran into the
-thousands of percent) - worth a conversation with whoever owns the two
-extracts about why they disagree by double digits rather than a percent or
-two, but this is a business question now, not a pipeline bug.
+bound premium 11.9% apart, bind count 3.7% apart, DSR vs RBS - worth a
+conversation with whoever owns the two extracts about why they disagree by
+more than "a percent or two" (tab 3, Rule 6).
 
-Found and fixed one real gap during this check: **RARC had been dropped
-entirely** during the earlier audit rewrite of `metrics/quality.py` and was
-never wired back into the pipeline output, despite being an approved
-metric. Fixed and verified - it now returns a real value (98.0% on this
-data) and is included in `pipeline/build_dashboard_data.py`'s output.
-
-Also generalised the percent-unit-scaling fix: `clean_rbs.py` used to scale
-a hand-picked list of 3 percent columns. It now detects and scales every
-column whose name ends in "(%)" automatically (22 columns on the real
-data) - so a percent column added to a future extract is covered without
-anyone needing to remember to update a list here.
+On this data, 271 DSR policies had a different New/Renewal value from RBS
+and now follow RBS (tab 3, Rule 2), and two entity names differed between
+the reports (`Mosaic Syndicate 2610` / `Mosaic 2610`, `Mosaic Syndicate
+5431 (EEA)` / `Mosaic 5431`) and are now mapped onto RBS's spelling.
 
 ## Audit notes (things fixed after the first working version)
 
 Worth reading before extending this further, since each one was a genuine
 bug, not a style choice:
 
-- **GELR "book basis" was wrong.** It treated a blank/zero GELR as 0 instead
-  of excluding that row, which isn't what the source definition says.
-  Fixed - see the docstring in `metrics/quality.py` for why "book basis" and
-  "margin basis" GELR are now (correctly) identical.
+- **GELR book version aligned to the workbook.** An earlier rewrite made it
+  identical to the margin version. Tab 4 defines it as an average "across
+  all rows", so it now counts a blank GELR as 0 and differs from the margin
+  version - see `metrics/quality.py`.
+- **Rate Adequacy overstated the result.** It divided all premium by a
+  benchmark built from only some rows - the exact issue tab 4 flags in
+  Matt's version. Both sides now use the same rows.
+- **Funnel rates were withheld below 20 submissions/quotes.** Tab 4 says
+  blank only when there are none, so the thresholds were removed.
+- **Binds could silently read 0.** `Policy Reference` is now a required RBS
+  column.
 - **DSR premium reconciliation summed every status, not just bound rows.**
   This inflated the DSR side of the premium cross-check by roughly 100x on
   the sample data. Fixed in `pipeline/build_dashboard_data.py`.

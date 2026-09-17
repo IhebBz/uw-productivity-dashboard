@@ -17,19 +17,19 @@ from metrics.quality import uw_margin_pct
 
 
 def active_underwriters(rbs: pd.DataFrame, scope: Scope) -> int:
-    """Count distinct underwriters with at least one bound RBS row in scope."""
+    """Tab 4, "Active underwriters" (stand-in): distinct underwriters with a bound RBS row in scope."""
     f = apply_scope(rbs, scope)
     return f["underwriter"].dropna().nunique()
 
 
 def roster_underwriters(dsr: pd.DataFrame, scope: Scope) -> int:
-    """Count distinct underwriters with at least one DSR row in scope, win or not."""
+    """Tab 4, "Roster underwriters" (stand-in): distinct underwriters with any DSR row in scope."""
     f = apply_scope(dsr, scope)
     return f["underwriter"].dropna().nunique()
 
 
 def premium_per_active_underwriter(rbs: pd.DataFrame, scope: Scope) -> float:
-    """Bound Premium divided by Active underwriters. The recommended default productivity figure."""
+    """Tab 4, "Premium per Active Underwriter": the recommended default productivity figure."""
     heads = active_underwriters(rbs, scope)
     if not heads:
         return None
@@ -37,7 +37,7 @@ def premium_per_active_underwriter(rbs: pd.DataFrame, scope: Scope) -> float:
 
 
 def uw_margin_per_active_underwriter(rbs: pd.DataFrame, scope: Scope) -> float:
-    """(Bound Premium x UW Margin %) divided by Active underwriters."""
+    """Tab 4, "UW Margin per Active Underwriter": (Bound Premium x UW Margin %) / Active underwriters."""
     heads = active_underwriters(rbs, scope)
     margin_pct = uw_margin_pct(rbs, scope)
     if not heads or margin_pct is None:
@@ -47,7 +47,7 @@ def uw_margin_per_active_underwriter(rbs: pd.DataFrame, scope: Scope) -> float:
 
 
 def premium_per_roster_underwriter(dsr: pd.DataFrame, rbs: pd.DataFrame, scope: Scope) -> float:
-    """Bound Premium divided by Roster underwriters. A second, broader view."""
+    """Tab 4 note: Premium per Roster underwriter, the second, wider view."""
     heads = roster_underwriters(dsr, scope)
     if not heads:
         return None

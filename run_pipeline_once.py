@@ -27,8 +27,9 @@ def main():
           "(DSR said", result["funnel"]["binds_reconciliation"].dsr_value, ")")
     print("Bound Premium:", result["premium"]["bound_premium"])
     print("UW Margin %:  ", result["quality"]["uw_margin_pct"])
-    print("Active UWs:   ", result["headcount"]["active_underwriters"])
-    print("Premium / UW: ", result["headcount"]["premium_per_active_underwriter"])
+    stand_in = result["productivity_stand_in"]
+    print("Active UWs (stand-in):         ", stand_in["active_underwriters_stand_in"])
+    print("Premium / Active UW (stand-in):", stand_in["premium_per_active_underwriter"])
 
     with open("outputs/latest_result.json", "w") as f:
         json.dump(to_json_safe(result), f, indent=2, default=str)

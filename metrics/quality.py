@@ -2,15 +2,12 @@
 Rate Adequacy. See the metrics workbook, tab 4, "HOW GOOD THE BUSINESS IS"
 and "PRICING".
 
-GELR and Commission each have a "book basis" (all premium) and a "margin
-basis" (only premium with a usable GELR) version. For GELR specifically,
-these two turn out to be numerically identical - the source definition
-restricts BOTH to usable-GELR rows, so a blank/zero GELR is excluded either
-way. Kept as two functions anyway because the original dashboard displays
-them under two different labels in different places; collapsing them into
-one function would make that on-screen distinction impossible to reproduce.
-Commission's two versions genuinely differ (book basis uses every row,
-margin basis doesn't) - see the functions below.
+GELR and Commission each come in two versions (tab 4), and the dashboard
+always says which one it means:
+- Book version: premium-weighted average across ALL rows in scope. A row
+  with no GELR or commission recorded still counts, as 0.
+- Margin version: the same average, but only over rows with a usable GELR
+  figure - exactly the rows UW Margin % is built from.
 """
 import dataclasses
 
@@ -27,35 +24,40 @@ def _weighted_average(values: pd.Series, weights: pd.Series) -> float:
     return (values * weights).sum() / total_weight
 
 
+def gelr_book_basis(rbs: pd.DataFrame, scope: Scope) -> float:
+    """Tab 4, "GELR": premium-weighted GELR across all rows, blank GELR as 0."""
+    f = apply_scope(rbs, scope)
+    return _weighted_average(f["gelr"].fillna(0), f["premium"])
+
+
 def gelr_margin_basis(rbs: pd.DataFrame, scope: Scope) -> float:
-    """Premium-weighted GELR, restricted to rows with a usable GELR figure."""
+    """Tab 4, "GELR (margin version)": premium-weighted GELR, usable rows only."""
     f = apply_scope(rbs, scope)
     f = f[f["gelr_ok"]]
     return _weighted_average(f["gelr"], f["premium"])
 
 
-def gelr_book_basis(rbs: pd.DataFrame, scope: Scope) -> float:
-    """Same calculation as gelr_margin_basis - see the module docstring for why
-    these are numerically identical rather than two different figures.
-    """
-    return gelr_margin_basis(rbs, scope)
-
-
 def commission_book_basis(rbs: pd.DataFrame, scope: Scope) -> float:
-    """Premium-weighted commission over every row in scope."""
+    """Tab 4, "Commission": premium-weighted commission across all rows."""
     f = apply_scope(rbs, scope)
     return _weighted_average(f["commission"], f["premium"])
 
 
 def commission_margin_basis(rbs: pd.DataFrame, scope: Scope) -> float:
-    """Premium-weighted commission, restricted to the margin's own rows."""
+    """Tab 4, "Commission (margin version)": restricted to the margin's own rows."""
     f = apply_scope(rbs, scope)
     f = f[f["gelr_ok"]]
     return _weighted_average(f["commission"], f["premium"])
 
 
 def uw_margin_pct(rbs: pd.DataFrame, scope: Scope) -> float:
-    """1 minus margin-basis GELR minus margin-basis commission, in percent units."""
+    """Tab 4, "UW Margin %": 1 minus GELR minus Commission, in percent units.
+
+    Uses the margin versions of both, since those are the rows the margin is
+    built from. Open question carried over from the workbook, not yet
+    decided: whether Mosaic's own internal commission should also be
+    subtracted. It isn't, until that decision is made.
+    """
     gelr = gelr_margin_basis(rbs, scope)
     comm = commission_margin_basis(rbs, scope)
     if gelr is None or comm is None:
@@ -64,7 +66,7 @@ def uw_margin_pct(rbs: pd.DataFrame, scope: Scope) -> float:
 
 
 def margin_cover(rbs: pd.DataFrame, scope: Scope) -> float:
-    """Share of premium in scope that actually has a usable GELR."""
+    """Tab 4, "Margin cover": share of premium in scope that has a usable GELR."""
     f = apply_scope(rbs, scope)
     total = f["premium"].sum()
     if not total:
@@ -73,7 +75,7 @@ def margin_cover(rbs: pd.DataFrame, scope: Scope) -> float:
 
 
 def commission_cover(rbs: pd.DataFrame, scope: Scope) -> float:
-    """Share of margin premium that carries a recorded commission above zero."""
+    """Tab 4, "Commission cover": share of margin premium with commission above zero."""
     f = apply_scope(rbs, scope)
     f = f[f["gelr_ok"]]
     total = f["premium"].sum()
@@ -83,33 +85,37 @@ def commission_cover(rbs: pd.DataFrame, scope: Scope) -> float:
 
 
 def rate_adequacy(rbs: pd.DataFrame, scope: Scope) -> float:
-    """Actual premium divided by the plan-based benchmark premium, as a percent.
+    """Tab 4, "Rate Adequacy": actual premium / plan-based benchmark premium, as a percent.
 
-    GELR and Plan Loss Ratio are both in percent units at this point, and
-    their scales cancel in this ratio - no extra division by 100 needed.
+    The workbook notes that Matt's version compares ALL premium against a
+    benchmark built from only some rows, which overstates the result, and
+    says to fix it. Fixed here: both sides use exactly the same rows - those
+    with a usable GELR and a Business Plan Loss Ratio above zero (a benchmark
+    can't be worked out without both).
+
+    Benchmark premium per row = premium x GELR / Plan Loss Ratio. Both are in
+    percent units at this point, so their scales cancel in the ratio.
     """
     f = apply_scope(rbs, scope)
-    ok = f[f["gelr_ok"]]
-    benchmark = (ok["premium"] / ok["plan_loss_ratio"] * ok["gelr"]).sum()
+    rows = f[f["gelr_ok"] & f["plan_loss_ratio"].notna() & f["plan_loss_ratio"].gt(0)]
+    benchmark = (rows["premium"] * rows["gelr"] / rows["plan_loss_ratio"]).sum()
     if not benchmark:
         return None
-    return 100 * f["premium"].sum() / benchmark
+    return 100 * rows["premium"].sum() / benchmark
 
 
 def rarc(rbs: pd.DataFrame, scope: Scope) -> float:
-    """Weighted-average rate change on renewing business, regardless of the
-    business_type filter in scope - RARC is a renewals-only measure by
-    definition, so "New" business is always excluded here even if scope
-    asks for it. 100 means the rate stayed flat.
+    """Tab 4, "RARC": weighted-average rate change on renewing business only.
+
+    "Always renewals only, no matter what other filters are set" - so "New"
+    business is excluded even if scope asks for it. Every other filter
+    (year, entity, ...) still applies. 100 means the rate stayed flat.
 
     Returns None if the RARC or expired-premium columns weren't present in
     this extract, rather than crashing - see clean_rbs.py.
     """
     if "rarc" not in rbs.columns or rbs["rarc"].isna().all():
         return None
-    # business_type is deliberately overridden, not inherited from scope -
-    # RARC always means renewals, no matter what the caller filtered for
-    # (metrics workbook, tab 6: "RARC ignores the filter altogether").
     rarc_scope = dataclasses.replace(scope, business_type="Renewal")
     f = apply_scope(rbs, rarc_scope)
     renewals = f[
@@ -118,3 +124,61 @@ def rarc(rbs: pd.DataFrame, scope: Scope) -> float:
         & f["rarc"].notna()
     ]
     return _weighted_average(renewals["rarc"], renewals["expired_premium"])
+
+
+def _median(values: pd.Series) -> float:
+    """Middle value, or None when there's nothing to take the middle of."""
+    values = values.dropna()
+    return values.median() if len(values) else None
+
+
+def attachment_point_excess(rbs: pd.DataFrame, scope: Scope) -> float:
+    """Tab 4, "Attachment point (Excess)": median Excess (USD), Excess layers only.
+
+    A median, not an average - one huge tower would otherwise swamp it.
+    Rows with no Excess figure are left out rather than counted as 0.
+    """
+    f = apply_scope(rbs, scope)
+    return _median(f.loc[f["layer_type"] == "Excess", "excess"])
+
+
+def attachment_point_primary(rbs: pd.DataFrame, scope: Scope) -> float:
+    """Tab 4, "Attachment point (Primary)": median Deductible (USD), Primary layers only.
+
+    Catch written in the workbook: a blank deductible counts as 0, same as
+    Matt's build, so this figure is often understated.
+    """
+    f = apply_scope(rbs, scope)
+    return _median(f.loc[f["layer_type"] == "Primary", "deductible"].fillna(0))
+
+
+def median_limit(rbs: pd.DataFrame, scope: Scope) -> float:
+    """Tab 4, "Average Limit": median Agency Exposure (USD).
+
+    Matt's build calls this "Average Limit", but it's a median - named
+    "Median Limit" on screen from the start, as the workbook asks.
+    """
+    return _median(apply_scope(rbs, scope)["exposure"])
+
+
+def rate_adequacy_rbs_benchmark(rbs: pd.DataFrame, scope: Scope) -> float:
+    """Tab 5, "Rate Adequacy double-check": RBS's own ready-made benchmark, as a percent.
+
+    Mosaic 1609 share of premium / Mosaic 1609 share benchmark premium, over
+    rows that carry a benchmark. Both columns are RBS's own figures, so this
+    is an independent check on rate_adequacy() above, which rebuilds the
+    benchmark from GELR and plan loss ratio.
+
+    Why not the "Achieved Price (%)" column the workbook names: on the real
+    extract its units are unclear (median about 1.3 after percent scaling,
+    with outliers in the hundreds of thousands), so a sum of the two premium
+    columns is used instead. Logged as an open question in workbook tab 9.
+    """
+    f = apply_scope(rbs, scope)
+    if f["mosaic_1609_benchmark"].isna().all():
+        return None
+    rows = f[f["mosaic_1609_benchmark"].gt(0)]
+    benchmark = rows["mosaic_1609_benchmark"].sum()
+    if not benchmark:
+        return None
+    return 100 * rows["mosaic_1609_premium"].sum() / benchmark

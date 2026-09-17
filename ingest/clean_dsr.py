@@ -11,7 +11,8 @@ import logging
 
 import pandas as pd
 
-from config.field_map import column_for
+from config.field_map import column_for, normalise_entity
+from ingest.underwriter_names import normalise_underwriter_name
 from ingest.validation import require_columns, warn_if_coercion_dropped_data
 
 logger = logging.getLogger(__name__)
@@ -37,9 +38,13 @@ def clean_dsr(raw: pd.DataFrame) -> pd.DataFrame:
     df = raw.copy()
     df["policy_reference"] = df["Policy Reference"]
     df["status"] = df["XFI Policy Status"]
-    df["underwriter"] = df[column_for("underwriter", "dsr")].fillna(
+    # Tab 3, Rule 5: underwriter is matched on the cleaned-up name, so formatting
+    # differences don't split one person in two. The original spelling is kept
+    # alongside it for display.
+    df["underwriter_raw"] = df[column_for("underwriter", "dsr")].fillna(
         df[column_for("underwriter_fallback", "dsr")])
-    df["entity"] = df[column_for("entity", "dsr")]
+    df["underwriter"] = df["underwriter_raw"].map(normalise_underwriter_name)
+    df["entity"] = df[column_for("entity", "dsr")].map(normalise_entity)
     df["line_of_business"] = df[column_for("line_of_business", "dsr")]
     df["business_type"] = df[column_for("business_type", "dsr")]
     df["placement"] = df[column_for("placement", "dsr")]
