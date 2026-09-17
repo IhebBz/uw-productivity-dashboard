@@ -3,7 +3,7 @@ Chat: refreshed on a timer in the background, with the dashboard just
 reading whatever the latest result was, rather than triggering a run itself.
 
 Run with:
-    uvicorn server.app:app --reload
+    python run_server.py
 
 Then open http://localhost:8000 in a browser. The page refreshes itself
 every few seconds and always shows the most recent background run - nobody
@@ -21,6 +21,7 @@ from scope.filter import Scope
 from pipeline.build_dashboard_data import build
 from pipeline.serialize import to_json_safe
 from pipeline.logging_setup import setup_logging
+from server.dashboard import render_dashboard
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -61,18 +62,6 @@ def get_metrics():
 
 @app.get("/", response_class=HTMLResponse)
 def dashboard_preview():
-    """A minimal, self-refreshing page - just enough to see the numbers update."""
-    return """
-    <html><head><meta http-equiv="refresh" content="60"></head>
-    <body style="font-family: Arial; padding: 2rem;">
-      <h2>UW Productivity Dashboard - local preview</h2>
-      <p>This page reloads every 5 seconds and always shows the latest
-      background run. Full numbers: <a href="/metrics">/metrics</a></p>
-      <div id="summary">Loading...</div>
-      <script>
-        fetch('/metrics').then(r => r.json()).then(d => {
-          document.getElementById('summary').innerText = JSON.stringify(d, null, 2);
-        });
-      </script>
-    </body></html>
-    """
+    """The actual dashboard - server-rendered from the latest background run."""
+    return render_dashboard(
+        _latest_result["data"], _latest_result["last_run"], _latest_result["error"])

@@ -25,3 +25,6 @@ venv/
 .idea/
 Thumbs.db
 desktop.ini
+
+data/*.cache.pkl
+data/*.cache.sig

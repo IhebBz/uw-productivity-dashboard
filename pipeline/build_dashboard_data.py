@@ -13,12 +13,18 @@ from ingest.clean_rbs import clean_rbs
 from reconcile.cross_check import reconcile
 from metrics import funnel, quality, composition, headcount
 
+import logging
+logger = logging.getLogger(__name__)
 
 def build(data_source: DataSource, scope: Scope) -> dict:
     """Run ingest and every implemented metric for one Scope; return a dict."""
+    logger.info("Reading and cleaning DSR...")
     dsr = clean_dsr(data_source.get_dsr())
+
+    logger.info("Reading and cleaning RBS...")
     rbs = clean_rbs(data_source.get_rbs())
 
+    logger.info("Computing metrics...")
     dsr_in_scope = apply_scope(dsr, scope)
     dsr_bound_premium = dsr_in_scope.loc[
         dsr_in_scope["status"].isin(BIND_STATUSES), "premium"].sum()
