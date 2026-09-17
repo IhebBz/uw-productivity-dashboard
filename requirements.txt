@@ -1,0 +1,8 @@
+pandas
+openpyxl
+pytest
+fastapi
+uvicorn
+
+# Add when redshift_source.py is implemented:
+# redshift-connector

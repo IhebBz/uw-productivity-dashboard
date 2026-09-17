@@ -1,0 +1,39 @@
+# Generated output
+outputs/*
+!outputs/.gitkeep
+*.log
+logs/
+
+# Source data (confidential extracts)
+data/*
+!data/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+build/
+dist/
+*.egg-info/
+venv/
+.venv/
+
+# Secrets
+.env
+.env.*
+config/local_settings.py
+
+# Office lock files
+~$*
+
+# Editor / OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
