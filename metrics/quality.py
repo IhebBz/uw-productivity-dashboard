@@ -8,6 +8,11 @@ always says which one it means:
   with no GELR or commission recorded still counts, as 0.
 - Margin version: the same average, but only over rows with a usable GELR
   figure - exactly the rows UW Margin % is built from.
+
+Careful when comparing figures with Matt's build (workbook tab 12): he shows
+ONE GELR, which matches our MARGIN version (and also drops 2021 inceptions,
+which we don't), and ONE commission, which matches our BOOK version. Lining
+up the like-named columns across the two dashboards mis-matches both.
 """
 import dataclasses
 
@@ -60,6 +65,28 @@ def uw_margin_pct(rbs: pd.DataFrame, scope: Scope) -> float:
     """
     gelr = gelr_margin_basis(rbs, scope)
     comm = commission_margin_basis(rbs, scope)
+    if gelr is None or comm is None:
+        return None
+    return 100 - gelr - comm
+
+
+def uw_margin_pct_recorded_commission(rbs: pd.DataFrame, scope: Scope) -> float:
+    """UW Margin % over only the rows that record a commission - a diagnostic.
+
+    UW Margin % treats a blank or zero commission as "no commission charged"
+    (tab 4), while a blank or zero GELR is treated as "not usable" and left
+    out. The two halves of 100 - GELR - Commission therefore handle a missing
+    value in opposite ways, and every row with no commission recorded pushes
+    the margin up.
+
+    This is the same figure worked out over the rows that do record one, so
+    the page can say how much of the margin rests on that treatment. Not a
+    headline figure: it drops real zero-commission business, which exists.
+    """
+    f = apply_scope(rbs, scope)
+    f = f[f["gelr_ok"] & f["commission"].gt(0)]
+    gelr = _weighted_average(f["gelr"], f["premium"])
+    comm = _weighted_average(f["commission"], f["premium"])
     if gelr is None or comm is None:
         return None
     return 100 - gelr - comm
@@ -145,8 +172,13 @@ def attachment_point_excess(rbs: pd.DataFrame, scope: Scope) -> float:
 def attachment_point_primary(rbs: pd.DataFrame, scope: Scope) -> float:
     """Tab 4, "Attachment point (Primary)": median Deductible (USD), Primary layers only.
 
-    Catch written in the workbook: a blank deductible counts as 0, same as
-    Matt's build, so this figure is often understated.
+    Catch written in the workbook: a blank deductible counts as 0, so this
+    figure is often understated - on the real extract that halves it.
+
+    Matt's build isn't directly comparable here (workbook tab 12): his
+    attachment column is Excess + Deductible added together and then split by
+    layer, and his own note says primary attachment is understated because a
+    third of deductibles are blank.
     """
     f = apply_scope(rbs, scope)
     return _median(f.loc[f["layer_type"] == "Primary", "deductible"].fillna(0))

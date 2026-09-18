@@ -1,0 +1,3894 @@
+{
+ "as_at": "15 Sep 2026",
+ "period": "Jan\u2013Aug 2026",
+ "prior_period": "Jan\u2013Aug 2025",
+ "rows": {
+  "dsr": 150003,
+  "rbs": 31413
+ },
+ "headline": [
+  {
+   "label": "Bound Premium",
+   "now": "$601.7M",
+   "prior": "$535.6M",
+   "change": "up 12.3%"
+  },
+  {
+   "label": "UW Margin %",
+   "now": "44.4%",
+   "prior": "42.7%",
+   "change": "up 1.8 pts"
+  },
+  {
+   "label": "Binds",
+   "now": "5,034",
+   "prior": "4,501",
+   "change": "up 11.8%"
+  },
+  {
+   "label": "Premium / Active UW (stand-in)",
+   "now": "$4.46M",
+   "prior": "$4.91M",
+   "change": "down -9.3%"
+  }
+ ],
+ "reconciliation": {
+  "premium": {
+   "dsr_value": 546940966.6922215,
+   "rbs_value": 601715359.9206438,
+   "gap_pct": 0.09103040553202117
+  },
+  "binds": {
+   "dsr_value": 4865,
+   "rbs_value": 5034,
+   "gap_pct": 0.03357171235597934
+  },
+  "binds_not_in_dsr": {
+   "policies": 169,
+   "of_binds": 5034,
+   "premium_share": 0.09047658147283967,
+   "bind_rate": 0.42348537604456826
+  }
+ },
+ "drivers": {
+  "prior": 4914012.603603303,
+  "current": 4457150.8142269915,
+  "total_change": -0.09297122865360752,
+  "rows": [
+   {
+    "key": "submissions_per_underwriter",
+    "label": "Submissions per underwriter",
+    "meaning": "submissions +11.9%, but spread across more underwriters (underwriters +23.9%)",
+    "prior": 212.62385321100916,
+    "current": 192.14074074074074,
+    "change": -0.0963349697643795,
+    "contribution": -0.09651112763809948
+   },
+   {
+    "key": "quote_rate",
+    "label": "Quote rate (Q/S)",
+    "meaning": "pricing more of what came in",
+    "prior": 0.4244477045219192,
+    "current": 0.44288523073364433,
+    "change": 0.043438864235330055,
+    "contribution": 0.040513061620073496
+   },
+   {
+    "key": "bind_rate",
+    "label": "Win rate (B/Q)",
+    "meaning": "winning less of what we priced",
+    "prior": 0.45755819863779607,
+    "current": 0.43819637883008355,
+    "change": -0.042315534647515696,
+    "contribution": -0.0411943456521854
+   },
+   {
+    "key": "average_deal_size",
+    "label": "Average deal size",
+    "meaning": "more premium per win",
+    "prior": 119001.86042940682,
+    "current": 119530.26617414458,
+    "change": 0.004440314990295624,
+    "contribution": 0.004221183016603837
+   }
+  ],
+  "counts": {
+   "submissions": [
+    23176,
+    25939
+   ],
+   "underwriters": [
+    109,
+    135
+   ]
+  },
+  "changes": {
+   "submissions": 0.11921815671384195,
+   "underwriters": 0.23853211009174302
+  }
+ },
+ "duplicates": {
+  "Deutsch, Ze'ev": [
+   "Deutsch, Zeev"
+  ],
+  "Deutsch, Zeev": [
+   "Deutsch, Ze'ev"
+  ],
+  "Hirst, Justin": [
+   "Hurst, Justin"
+  ],
+  "Hurst, Justin": [
+   "Hirst, Justin"
+  ],
+  "Macdonald, Noelle": [
+   "Macdonald, Nolle"
+  ],
+  "Macdonald, Nolle": [
+   "Macdonald, Noelle"
+  ],
+  "Stedman, Rob": [
+   "Stedman, Robert"
+  ],
+  "Stedman, Robert": [
+   "Stedman, Rob"
+  ]
+ },
+ "metrics": [
+  {
+   "key": "funnel.submissions",
+   "title": "Submissions",
+   "meaning": "How many risks came in, won or not.",
+   "formula": "Number of different policies.",
+   "rows": "Every DSR row left after your filters, whatever its status.",
+   "counted_per": "Policy",
+   "columns": [
+    {
+     "report": "DSR",
+     "names": [
+      "Policy Reference"
+     ],
+     "label": "Policy",
+     "steps": [
+      "Used as it is."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [],
+   "code": "metrics/funnel.py submissions",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "The funnel",
+   "on_the_page": true,
+   "label": "Submissions",
+   "now": "25,939",
+   "prior": "23,176"
+  },
+  {
+   "key": "funnel.quotes",
+   "title": "Quotes",
+   "meaning": "How many risks we priced.",
+   "formula": "Number of different policies with a quote status.",
+   "rows": "DSR rows whose status counts as a quote.",
+   "counted_per": "Policy",
+   "columns": [
+    {
+     "report": "DSR",
+     "names": [
+      "Policy Reference"
+     ],
+     "label": "Policy",
+     "steps": [
+      "Used as it is."
+     ],
+     "required": true
+    },
+    {
+     "report": "DSR",
+     "names": [
+      "XFI Policy Status"
+     ],
+     "label": "Policy status",
+     "steps": [
+      "Used as it is.",
+      "Counts as a quote if it is one of: Bound, Cancelled, Firm Order Noted, Live Policy, Non Renewed, Quote, Quote NTU, Renewed.",
+      "Counts as bound if it is one of: Bound, Cancelled, Firm Order Noted, Live Policy, Non Renewed, Renewed."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "A status that appears in the export for the first time is NOT a quote until it's added to QUOTED_STATUSES in config/settings.py."
+   ],
+   "code": "metrics/funnel.py quotes",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "The funnel",
+   "on_the_page": true,
+   "label": "Quotes",
+   "now": "11,488",
+   "prior": "9,837"
+  },
+  {
+   "key": "funnel.binds",
+   "title": "Binds",
+   "meaning": "How many risks we won.",
+   "formula": "Number of different policies in RBS.",
+   "rows": "Every RBS row left after your filters. Every RBS row is a won risk.",
+   "counted_per": "Policy",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Policy Reference"
+     ],
+     "label": "Policy",
+     "steps": [
+      "Used as it is."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "Cross-checked against DSR's own count (policies with a bound status). A red badge means they're more than 2% apart; RBS's figure is the one shown.",
+    "Matt's build counts binds from DSR's statuses instead, so his bind count is our cross-check figure (workbook tab 12)."
+   ],
+   "code": "metrics/funnel.py binds_from_rbs",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "The funnel",
+   "on_the_page": true,
+   "label": "Binds",
+   "now": "5,034",
+   "prior": "4,501"
+  },
+  {
+   "key": "funnel.quote_rate",
+   "title": "Quote rate (Q/S)",
+   "meaning": "Of everything that came in, the share we priced.",
+   "formula": "Quotes \u00f7 Submissions.",
+   "rows": "Every DSR row left after your filters, whatever its status.",
+   "counted_per": "Policy",
+   "columns": [
+    {
+     "report": "DSR",
+     "names": [
+      "Policy Reference"
+     ],
+     "label": "Policy",
+     "steps": [
+      "Used as it is."
+     ],
+     "required": true
+    },
+    {
+     "report": "DSR",
+     "names": [
+      "XFI Policy Status"
+     ],
+     "label": "Policy status",
+     "steps": [
+      "Used as it is.",
+      "Counts as a quote if it is one of: Bound, Cancelled, Firm Order Noted, Live Policy, Non Renewed, Quote, Quote NTU, Renewed.",
+      "Counts as bound if it is one of: Bound, Cancelled, Firm Order Noted, Live Policy, Non Renewed, Renewed."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "Blank (not 0%) when there are no submissions."
+   ],
+   "code": "metrics/funnel.py quote_rate",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "The funnel",
+   "on_the_page": true,
+   "label": "Quote rate (Q/S)",
+   "now": "44.3%",
+   "prior": "42.4%"
+  },
+  {
+   "key": "funnel.bind_rate",
+   "title": "Win rate (B/Q)",
+   "meaning": "Of everything we priced, the share we won.",
+   "formula": "Binds (from RBS) \u00f7 Quotes (from DSR).",
+   "rows": "As Binds and Quotes.",
+   "counted_per": "Policy",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Policy Reference"
+     ],
+     "label": "Policy",
+     "steps": [
+      "Used as it is."
+     ],
+     "required": true
+    },
+    {
+     "report": "DSR",
+     "names": [
+      "Policy Reference"
+     ],
+     "label": "Policy",
+     "steps": [
+      "Used as it is."
+     ],
+     "required": true
+    },
+    {
+     "report": "DSR",
+     "names": [
+      "XFI Policy Status"
+     ],
+     "label": "Policy status",
+     "steps": [
+      "Used as it is.",
+      "Counts as a quote if it is one of: Bound, Cancelled, Firm Order Noted, Live Policy, Non Renewed, Quote, Quote NTU, Renewed.",
+      "Counts as bound if it is one of: Bound, Cancelled, Firm Order Noted, Live Policy, Non Renewed, Renewed."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "Mixes the two reports on purpose: RBS is the source of truth for wins.",
+    "Blank when there are no quotes, and on Submission date basis.",
+    "Overstated wherever RBS holds a bound policy DSR has no record of - the page says how many and what the rate would be without them (open question 26). On a narrow slice or one underwriter it can pass 100%."
+   ],
+   "code": "metrics/funnel.py bind_rate",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "The funnel",
+   "on_the_page": true,
+   "label": "Win rate (B/Q)",
+   "now": "43.8%",
+   "prior": "45.8%"
+  },
+  {
+   "key": "funnel.end_to_end_win_rate",
+   "title": "End-to-end win rate (B/S)",
+   "meaning": "Of everything that came in, the share we won.",
+   "formula": "Binds (from RBS) \u00f7 Submissions (from DSR).",
+   "rows": "As Binds and Submissions.",
+   "counted_per": "Policy",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Policy Reference"
+     ],
+     "label": "Policy",
+     "steps": [
+      "Used as it is."
+     ],
+     "required": true
+    },
+    {
+     "report": "DSR",
+     "names": [
+      "Policy Reference"
+     ],
+     "label": "Policy",
+     "steps": [
+      "Used as it is."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "Blank when there are no submissions, and on Submission date basis.",
+    "Overstated for the same reason as B/Q: some bound policies have no DSR row (open question 26)."
+   ],
+   "code": "metrics/funnel.py end_to_end_win_rate",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "The funnel",
+   "on_the_page": true,
+   "label": "End-to-end win rate (B/S)",
+   "now": "19.4%",
+   "prior": "19.4%"
+  },
+  {
+   "key": "premium.bound_premium",
+   "title": "Bound Premium",
+   "meaning": "Total premium on business we won.",
+   "formula": "Sum of premium across every line of every policy.",
+   "rows": "Every RBS row left after your filters.",
+   "counted_per": "Line",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "Summed across every line first, never after collapsing to one row per policy (workbook tab 3, Rule 4).",
+    "Matt's headline premium comes from DSR, not RBS - his figure is the cross-check below, and every per-person and deal-size figure of his sits on that base (workbook tab 12).",
+    "Cross-checked against DSR: the same premium column on DSR rows with a bound status. A red badge means more than 2% apart; RBS's figure is shown."
+   ],
+   "code": "metrics/premium.py bound_premium",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "How much we wrote",
+   "on_the_page": true,
+   "label": "Bound Premium",
+   "now": "$601.7M",
+   "prior": "$535.6M"
+  },
+  {
+   "key": "premium.average_deal_size",
+   "title": "Average Deal Size",
+   "meaning": "The average premium on a won policy.",
+   "formula": "Bound Premium \u00f7 Binds.",
+   "rows": "Every RBS row left after your filters.",
+   "counted_per": "Policy",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Policy Reference"
+     ],
+     "label": "Policy",
+     "steps": [
+      "Used as it is."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "Blank when there are no binds."
+   ],
+   "code": "metrics/premium.py average_deal_size",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "How much we wrote",
+   "on_the_page": true,
+   "label": "Average Deal Size",
+   "now": "$119.5k",
+   "prior": "$119.0k"
+  },
+  {
+   "key": "quality.uw_margin_pct",
+   "title": "UW Margin %",
+   "meaning": "What's left of each premium dollar after expected claims and commission.",
+   "formula": "100% \u2212 GELR (margin version) \u2212 Commission (margin version).",
+   "rows": "Only RBS rows with a usable GELR (not blank, not 0).",
+   "counted_per": "Line",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Agency GELR (%)"
+     ],
+     "label": "Expected loss ratio (GELR)",
+     "steps": [
+      "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+      "Blanks kept as blank.",
+      "\"Usable GELR\" = not blank and not exactly 0."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Original Commission (%)"
+     ],
+     "label": "Commission",
+     "steps": [
+      "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+      "Blank counts as 0 (no commission)."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "Mosaic's own internal commission is NOT subtracted - open question 2.",
+    "A blank or zero commission counts as \"none charged\" while a blank or zero GELR is treated as unusable and left out, so the two halves handle a missing value in opposite ways and the margin reads high. The page says by how much (open question 25)."
+   ],
+   "code": "metrics/quality.py uw_margin_pct",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "How good the business is",
+   "on_the_page": true,
+   "label": "UW Margin %",
+   "now": "44.4%",
+   "prior": "42.7%"
+  },
+  {
+   "key": "quality.gelr_book_basis",
+   "title": "GELR \u2013 book version",
+   "meaning": "Expected share of premium paid out in claims, across the whole book.",
+   "formula": "\u03a3(GELR \u00d7 premium) \u00f7 \u03a3 premium.",
+   "rows": "Every RBS row left after your filters.",
+   "counted_per": "Line",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Agency GELR (%)"
+     ],
+     "label": "Expected loss ratio (GELR)",
+     "steps": [
+      "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+      "Blanks kept as blank.",
+      "\"Usable GELR\" = not blank and not exactly 0."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "A blank GELR counts as 0 here, which pulls the figure down - open question, workbook tab 9.",
+    "Matt's build has no book version: his single GELR matches our margin version, and also drops 2021 inceptions, which we don't (workbook tab 12)."
+   ],
+   "code": "metrics/quality.py gelr_book_basis",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "How good the business is",
+   "on_the_page": true,
+   "label": "GELR \u2013 book version",
+   "now": "38.8%",
+   "prior": "39.8%"
+  },
+  {
+   "key": "quality.gelr_margin_basis",
+   "title": "GELR \u2013 margin version",
+   "meaning": "Expected claims share, on exactly the rows UW Margin % uses.",
+   "formula": "\u03a3(GELR \u00d7 premium) \u00f7 \u03a3 premium.",
+   "rows": "Only RBS rows with a usable GELR (not blank, not 0).",
+   "counted_per": "Line",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Agency GELR (%)"
+     ],
+     "label": "Expected loss ratio (GELR)",
+     "steps": [
+      "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+      "Blanks kept as blank.",
+      "\"Usable GELR\" = not blank and not exactly 0."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [],
+   "code": "metrics/quality.py gelr_margin_basis",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "How good the business is",
+   "on_the_page": true,
+   "label": "GELR \u2013 margin version",
+   "now": "39.0%",
+   "prior": "39.8%"
+  },
+  {
+   "key": "quality.commission_book_basis",
+   "title": "Commission \u2013 book version",
+   "meaning": "Share of premium paid away as commission, whole book.",
+   "formula": "\u03a3(commission \u00d7 premium) \u00f7 \u03a3 premium.",
+   "rows": "Every RBS row left after your filters.",
+   "counted_per": "Line",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Original Commission (%)"
+     ],
+     "label": "Commission",
+     "steps": [
+      "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+      "Blank counts as 0 (no commission)."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [],
+   "code": "metrics/quality.py commission_book_basis",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "How good the business is",
+   "on_the_page": true,
+   "label": "Commission \u2013 book version",
+   "now": "16.6%",
+   "prior": "17.5%"
+  },
+  {
+   "key": "quality.commission_margin_basis",
+   "title": "Commission \u2013 margin version",
+   "meaning": "Commission share, on exactly the rows UW Margin % uses.",
+   "formula": "\u03a3(commission \u00d7 premium) \u00f7 \u03a3 premium.",
+   "rows": "Only RBS rows with a usable GELR (not blank, not 0).",
+   "counted_per": "Line",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Original Commission (%)"
+     ],
+     "label": "Commission",
+     "steps": [
+      "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+      "Blank counts as 0 (no commission)."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Agency GELR (%)"
+     ],
+     "label": "Expected loss ratio (GELR)",
+     "steps": [
+      "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+      "Blanks kept as blank.",
+      "\"Usable GELR\" = not blank and not exactly 0."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [],
+   "code": "metrics/quality.py commission_margin_basis",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "How good the business is",
+   "on_the_page": true,
+   "label": "Commission \u2013 margin version",
+   "now": "16.6%",
+   "prior": "17.5%"
+  },
+  {
+   "key": "quality.uw_margin_pct_recorded_commission",
+   "title": "UW Margin % over rows that record a commission",
+   "meaning": "A check on UW Margin %: the same figure over the rows that actually record a commission.",
+   "formula": "100% \u2212 GELR \u2212 Commission, over usable-GELR rows with a commission above 0.",
+   "rows": "RBS rows with a usable GELR AND a commission above 0.",
+   "counted_per": "Line",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Agency GELR (%)"
+     ],
+     "label": "Expected loss ratio (GELR)",
+     "steps": [
+      "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+      "Blanks kept as blank.",
+      "\"Usable GELR\" = not blank and not exactly 0."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Original Commission (%)"
+     ],
+     "label": "Commission",
+     "steps": [
+      "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+      "Blank counts as 0 (no commission)."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "Shown only as a note under UW Margin %, never as a headline: it drops real zero-commission business, which exists.",
+    "The gap between the two is what the \"blank commission = none charged\" rule is worth - open question 25."
+   ],
+   "code": "metrics/quality.py uw_margin_pct_recorded_commission",
+   "traced": false,
+   "check_note": "A variant of UW Margin %, which is itself checked against the raw columns.",
+   "workbook": "Tab 4",
+   "section": "How good the business is",
+   "on_the_page": false,
+   "label": "UW Margin % over rows that record a commission",
+   "now": "43.0%",
+   "prior": "41.4%"
+  },
+  {
+   "key": "quality.margin_cover",
+   "title": "Margin cover",
+   "meaning": "How much of the premium UW Margin % is actually based on.",
+   "formula": "Premium on rows with a usable GELR \u00f7 all premium.",
+   "rows": "Every RBS row left after your filters.",
+   "counted_per": "Line",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Agency GELR (%)"
+     ],
+     "label": "Expected loss ratio (GELR)",
+     "steps": [
+      "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+      "Blanks kept as blank.",
+      "\"Usable GELR\" = not blank and not exactly 0."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [],
+   "code": "metrics/quality.py margin_cover",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "How good the business is",
+   "on_the_page": true,
+   "label": "Margin cover",
+   "now": "99.5%",
+   "prior": "100.0%"
+  },
+  {
+   "key": "quality.commission_cover",
+   "title": "Commission cover",
+   "meaning": "How much of the margin premium has a commission recorded.",
+   "formula": "Premium on those rows with commission above 0 \u00f7 their premium.",
+   "rows": "Only RBS rows with a usable GELR (not blank, not 0).",
+   "counted_per": "Line",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Original Commission (%)"
+     ],
+     "label": "Commission",
+     "steps": [
+      "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+      "Blank counts as 0 (no commission)."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Agency GELR (%)"
+     ],
+     "label": "Expected loss ratio (GELR)",
+     "steps": [
+      "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+      "Blanks kept as blank.",
+      "\"Usable GELR\" = not blank and not exactly 0."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [],
+   "code": "metrics/quality.py commission_cover",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "How good the business is",
+   "on_the_page": true,
+   "label": "Commission cover",
+   "now": "88.5%",
+   "prior": "89.4%"
+  },
+  {
+   "key": "quality.attachment_point_excess",
+   "title": "Median attachment point \u2013 Excess",
+   "meaning": "The typical loss level before an excess layer pays.",
+   "formula": "Middle value (median) of Excess.",
+   "rows": "RBS rows whose layer is Excess.",
+   "counted_per": "Line",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Excess (USD)"
+     ],
+     "label": "Excess",
+     "steps": [
+      "Read as a number; blanks kept as blank."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Type of Layer"
+     ],
+     "label": "Layer",
+     "steps": [
+      "Used as it is (Primary / Excess / Quota Share)."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "Rows with a blank Excess are left out."
+   ],
+   "code": "metrics/quality.py attachment_point_excess",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "How good the business is",
+   "on_the_page": true,
+   "label": "Median attachment point \u2013 Excess",
+   "now": "$30.0M",
+   "prior": "$30.0M"
+  },
+  {
+   "key": "quality.attachment_point_primary",
+   "title": "Median attachment point \u2013 Primary",
+   "meaning": "The typical loss level before a primary layer pays.",
+   "formula": "Middle value (median) of Deductible.",
+   "rows": "RBS rows whose layer is Primary.",
+   "counted_per": "Line",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Deductible (USD)"
+     ],
+     "label": "Deductible",
+     "steps": [
+      "Read as a number; blanks kept as blank."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Type of Layer"
+     ],
+     "label": "Layer",
+     "steps": [
+      "Used as it is (Primary / Excess / Quota Share)."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "A blank deductible counts as 0 (many Primary rows are blank), so this is often understated - on the real extract it halves the figure.",
+    "Not directly comparable with Matt's build, which adds Excess and Deductible together before splitting by layer (workbook tab 12)."
+   ],
+   "code": "metrics/quality.py attachment_point_primary",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "How good the business is",
+   "on_the_page": true,
+   "label": "Median attachment point \u2013 Primary",
+   "now": "$29.3k",
+   "prior": "$25.0k"
+  },
+  {
+   "key": "quality.median_limit",
+   "title": "Median limit",
+   "meaning": "The typical size of cover we're on the hook for.",
+   "formula": "Middle value (median) of Exposure.",
+   "rows": "Every RBS row left after your filters.",
+   "counted_per": "Line",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Exposure (USD)"
+     ],
+     "label": "Exposure (limit)",
+     "steps": [
+      "Read as a number; blanks kept as blank."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "Rows with a blank exposure are left out.",
+    "Matt's build calls this \"Average Limit\", but it's a median."
+   ],
+   "code": "metrics/quality.py median_limit",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "How good the business is",
+   "on_the_page": true,
+   "label": "Median limit",
+   "now": "$5.85M",
+   "prior": "$7.28M"
+  },
+  {
+   "key": "pricing.rate_adequacy",
+   "title": "Rate Adequacy",
+   "meaning": "Are we charging enough compared with plan? Above 100% = above plan.",
+   "formula": "\u03a3 premium \u00f7 \u03a3(premium \u00d7 GELR \u00f7 Plan loss ratio), as a %.",
+   "rows": "RBS rows with a usable GELR AND a plan loss ratio above 0 - on both sides of the division.",
+   "counted_per": "Line",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Agency GELR (%)"
+     ],
+     "label": "Expected loss ratio (GELR)",
+     "steps": [
+      "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+      "Blanks kept as blank.",
+      "\"Usable GELR\" = not blank and not exactly 0."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Business Plan Loss Ratio (%)"
+     ],
+     "label": "Plan loss ratio",
+     "steps": [
+      "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+      "Blanks kept as blank."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "Matt's version divides ALL premium by a benchmark built from only some rows, which overstates it. Here both sides use the same rows."
+   ],
+   "code": "metrics/quality.py rate_adequacy",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "Pricing",
+   "on_the_page": true,
+   "label": "Rate Adequacy",
+   "now": "139.7%",
+   "prior": "131.8%"
+  },
+  {
+   "key": "pricing.rate_adequacy_rbs_benchmark",
+   "title": "Rate Adequacy \u2013 RBS benchmark check",
+   "meaning": "A second opinion on Rate Adequacy, from RBS's own benchmark.",
+   "formula": "\u03a3 Mosaic 1609 premium \u00f7 \u03a3 Mosaic 1609 benchmark premium, as a %.",
+   "rows": "RBS rows with a benchmark premium above 0.",
+   "counted_per": "Line",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Mosaic 1609 Share Gross Written Premium (USD)"
+     ],
+     "label": "Mosaic 1609 premium",
+     "steps": [
+      "Read as a number; blanks kept as blank (add nothing to a total)."
+     ],
+     "required": false
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Mosaic 1609 Share Benchmark Premium (USD)"
+     ],
+     "label": "Mosaic 1609 benchmark premium",
+     "steps": [
+      "Read as a number; blanks kept as blank."
+     ],
+     "required": false
+    }
+   ],
+   "catches": [
+    "Covers Mosaic 1609's share of each risk only, not all agency premium.",
+    "Uses the benchmark premium, not the \"Achieved Price (%)\" column, whose unit is unclear - workbook tab 9."
+   ],
+   "code": "metrics/quality.py rate_adequacy_rbs_benchmark",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 5",
+   "section": "Pricing",
+   "on_the_page": true,
+   "label": "Rate Adequacy \u2013 RBS benchmark check",
+   "now": "139.4%",
+   "prior": "131.7%"
+  },
+  {
+   "key": "pricing.rarc",
+   "title": "RARC",
+   "meaning": "On renewals, how much the price moved once the risk itself is allowed for.",
+   "formula": "\u03a3(RARC \u00d7 expiring premium) \u00f7 \u03a3 expiring premium.",
+   "rows": "RBS renewals (whatever the Business filter says) with an expiring premium that isn't blank or 0 and a RARC that isn't blank.",
+   "counted_per": "Line",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Risk Adjusted Rate Change (%)"
+     ],
+     "label": "Rate change (RARC)",
+     "steps": [
+      "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+      "Blanks kept as blank. 100% = rate unchanged."
+     ],
+     "required": false
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Expired Gross Premium Agency (USD) of previous policy"
+     ],
+     "label": "Expiring premium",
+     "steps": [
+      "Read as a number; blanks kept as blank."
+     ],
+     "required": false
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Renewal Status"
+     ],
+     "label": "New or renewal",
+     "steps": [
+      "Used as it is."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "Many RBS rows have no RARC, so this rests on part of the book - workbook tab 11 shows how full the column is."
+   ],
+   "code": "metrics/quality.py rarc",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "Pricing",
+   "on_the_page": true,
+   "label": "RARC",
+   "now": "99.5%",
+   "prior": "95.4%"
+  },
+  {
+   "key": "composition.mosaic_as_lead",
+   "title": "Mosaic as lead",
+   "meaning": "How often we set the terms on a shared placement.",
+   "formula": "Rows where the slip lead contains \"Mosaic\" \u00f7 all rows.",
+   "rows": "Every RBS row left after your filters.",
+   "counted_per": "Line (not premium)",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Slip Lead"
+     ],
+     "label": "Slip lead",
+     "steps": [
+      "Used as it is. Counts as Mosaic when the text contains \"Mosaic\" (any capitals)."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "Counts rows, so a small deal counts the same as a large one.",
+    "Includes \"Mosaic Asta Europe\" and \"Mosaic 5399\" as Mosaic - open question, workbook tab 9.",
+    "A blank slip lead counts as not Mosaic."
+   ],
+   "code": "metrics/composition.py mosaic_as_lead",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "What kind of book we write",
+   "on_the_page": true,
+   "label": "Mosaic as lead",
+   "now": "68.1%",
+   "prior": "63.9%"
+  },
+  {
+   "key": "composition.primary_share",
+   "title": "Primary share",
+   "meaning": "How much of our book is first-layer cover.",
+   "formula": "Primary rows \u00f7 all rows.",
+   "rows": "Every RBS row left after your filters.",
+   "counted_per": "Line (not premium)",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Type of Layer"
+     ],
+     "label": "Layer",
+     "steps": [
+      "Used as it is (Primary / Excess / Quota Share)."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "Counts rows, not premium. Blank and Quota Share count as not Primary."
+   ],
+   "code": "metrics/composition.py primary_share",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "What kind of book we write",
+   "on_the_page": true,
+   "label": "Primary share",
+   "now": "52.0%",
+   "prior": "52.3%"
+  },
+  {
+   "key": "composition.average_agency_share",
+   "title": "Average agency share",
+   "meaning": "How big a slice of each placement we typically take.",
+   "formula": "\u03a3(line share \u00d7 premium) \u00f7 \u03a3 premium.",
+   "rows": "RBS rows with a line share.",
+   "counted_per": "Line",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Line/Share (%)"
+     ],
+     "label": "Agency line share",
+     "steps": [
+      "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+      "Blanks kept as blank."
+     ],
+     "required": false
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "Rows with no line share are left out of both sides. Matt's build divides by all premium instead, which understates it (workbook tab 12)."
+   ],
+   "code": "metrics/composition.py average_agency_share",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "What kind of book we write",
+   "on_the_page": true,
+   "label": "Average agency share",
+   "now": "59.3%",
+   "prior": "60.2%"
+  },
+  {
+   "key": "composition.scm_share",
+   "title": "SCM share",
+   "meaning": "How much of our premium sits on third-party capital rather than Mosaic 1609.",
+   "formula": "1 \u2212 (\u03a3 Mosaic 1609 premium \u00f7 \u03a3 premium).",
+   "rows": "Every RBS row left after your filters.",
+   "counted_per": "Line",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Mosaic 1609 Share Gross Written Premium (USD)"
+     ],
+     "label": "Mosaic 1609 premium",
+     "steps": [
+      "Read as a number; blanks kept as blank (add nothing to a total)."
+     ],
+     "required": false
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [],
+   "code": "metrics/composition.py scm_share",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "What kind of book we write",
+   "on_the_page": true,
+   "label": "SCM share",
+   "now": "64.7%",
+   "prior": "52.5%"
+  },
+  {
+   "key": "composition.broker_concentration",
+   "title": "Broker concentration",
+   "meaning": "How much of our book sits with just a few brokers.",
+   "formula": "Premium of the 5 biggest brokers \u00f7 all premium.",
+   "rows": "Every RBS row left after your filters.",
+   "counted_per": "Line",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Broker Name"
+     ],
+     "label": "Broker",
+     "steps": [
+      "Used exactly as typed - one broker spelled two ways counts as two."
+     ],
+     "required": false
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "Rows with no broker stay in the total but can't be a top broker."
+   ],
+   "code": "metrics/composition.py broker_concentration",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 5",
+   "section": "What kind of book we write",
+   "on_the_page": true,
+   "label": "Broker concentration",
+   "now": "23.6%",
+   "prior": "27.8%"
+  },
+  {
+   "key": "composition.average_policy_length",
+   "title": "Average policy length",
+   "meaning": "How long our policies typically run.",
+   "formula": "One length per policy (from its first line), then the average.",
+   "rows": "RBS rows with a policy length.",
+   "counted_per": "Policy",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Tenor in Months"
+     ],
+     "label": "Policy length",
+     "steps": [
+      "Read as a number; blanks kept as blank."
+     ],
+     "required": false
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Policy Reference"
+     ],
+     "label": "Policy",
+     "steps": [
+      "Used as it is."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [],
+   "code": "metrics/composition.py average_policy_length",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 5",
+   "section": "What kind of book we write",
+   "on_the_page": true,
+   "label": "Average policy length",
+   "now": "18.3 mo",
+   "prior": "19.5 mo"
+  },
+  {
+   "key": "composition.renewal_premium_growth",
+   "title": "Renewal premium growth",
+   "meaning": "Of the business that came up for renewal, how much premium came back.",
+   "formula": "\u03a3 renewal premium \u00f7 \u03a3 expiring premium.",
+   "rows": "RBS renewals (whatever the Business filter says) with an expiring premium above 0.",
+   "counted_per": "Line",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Expired Gross Premium Agency (USD) of previous policy"
+     ],
+     "label": "Expiring premium",
+     "steps": [
+      "Read as a number; blanks kept as blank."
+     ],
+     "required": false
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Renewal Status"
+     ],
+     "label": "New or renewal",
+     "steps": [
+      "Used as it is."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "NOT a true retention rate: renewals that didn't happen have no RBS row."
+   ],
+   "code": "metrics/composition.py renewal_premium_growth",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 5",
+   "section": "What kind of book we write",
+   "on_the_page": true,
+   "label": "Renewal premium growth",
+   "now": "92.6%",
+   "prior": "105.5%"
+  },
+  {
+   "key": "composition.new_vs_renewal_mix",
+   "title": "New vs. Renewal mix",
+   "meaning": "What share of premium is new business vs. repeat clients.",
+   "formula": "Premium for each value \u00f7 all premium.",
+   "rows": "Every RBS row left after your filters.",
+   "counted_per": "Line",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Renewal Status"
+     ],
+     "label": "New or renewal",
+     "steps": [
+      "Used as it is."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "A blank value shows as its own \"(blank)\" slice rather than disappearing."
+   ],
+   "code": "metrics/composition.py new_vs_renewal_mix",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 5",
+   "section": "What kind of book we write",
+   "on_the_page": false,
+   "label": "New vs. Renewal mix",
+   "now": null,
+   "prior": null
+  },
+  {
+   "key": "composition.placement_mix",
+   "title": "Placement mix",
+   "meaning": "What share of premium is Open Market vs. Facility vs. Agreement.",
+   "formula": "Premium for each value \u00f7 all premium.",
+   "rows": "Every RBS row left after your filters.",
+   "counted_per": "Line",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Mapped Method of Placement (MOP)"
+     ],
+     "label": "Placement",
+     "steps": [
+      "Used as it is."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "A blank value shows as its own slice."
+   ],
+   "code": "metrics/composition.py placement_mix",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 5",
+   "section": "What kind of book we write",
+   "on_the_page": false,
+   "label": "Placement mix",
+   "now": null,
+   "prior": null
+  },
+  {
+   "key": "productivity_stand_in.active_underwriters_stand_in",
+   "title": "Active underwriters (stand-in)",
+   "meaning": "Underwriters who won at least one deal - a stand-in for headcount.",
+   "formula": "Number of different underwriter names.",
+   "rows": "Every RBS row left after your filters.",
+   "counted_per": "Person",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Producing Underwriter Name",
+      "Underwriter Name"
+     ],
+     "label": "Underwriter",
+     "steps": [
+      "Takes Producing Underwriter Name; where that's blank, Underwriter Name.",
+      "For matching: lower-cased, punctuation and extra spaces removed, so \"SMITH, Jane\" and \"smith jane\" are one person. A name typed two genuinely different ways still counts as two people (workbook tab 3, Rule 5).",
+      "Shown on screen with the most common original spelling."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "Not true headcount: misses leaders who don't write, new joiners and people on leave.",
+    "Rows with no underwriter don't add a person."
+   ],
+   "code": "metrics/headcount.py active_underwriters",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "Productivity (stand-in headcount)",
+   "on_the_page": true,
+   "label": "Active underwriters (stand-in)",
+   "now": "135",
+   "prior": "109"
+  },
+  {
+   "key": "productivity_stand_in.roster_underwriters_stand_in",
+   "title": "Roster underwriters (stand-in)",
+   "meaning": "Underwriters with at least one submission, won or not.",
+   "formula": "Number of different underwriter names.",
+   "rows": "Every DSR row left after your filters, whatever its status.",
+   "counted_per": "Person",
+   "columns": [
+    {
+     "report": "DSR",
+     "names": [
+      "Producing Underwriter Name",
+      "Underwriter Name"
+     ],
+     "label": "Underwriter",
+     "steps": [
+      "Takes Producing Underwriter Name; where that's blank, Underwriter Name.",
+      "For matching: lower-cased, punctuation and extra spaces removed, so \"SMITH, Jane\" and \"smith jane\" are one person. A name typed two genuinely different ways still counts as two people (workbook tab 3, Rule 5).",
+      "Shown on screen with the most common original spelling."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "Not true headcount - same gaps as Active underwriters, but sees people who didn't win."
+   ],
+   "code": "metrics/headcount.py roster_underwriters",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "Productivity (stand-in headcount)",
+   "on_the_page": true,
+   "label": "Roster underwriters (stand-in)",
+   "now": "146",
+   "prior": "112"
+  },
+  {
+   "key": "productivity_stand_in.premium_per_active_underwriter",
+   "title": "Premium / Active Underwriter",
+   "meaning": "The recommended productivity figure.",
+   "formula": "Bound Premium \u00f7 Active underwriters.",
+   "rows": "Every RBS row left after your filters.",
+   "counted_per": "Person",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Producing Underwriter Name",
+      "Underwriter Name"
+     ],
+     "label": "Underwriter",
+     "steps": [
+      "Takes Producing Underwriter Name; where that's blank, Underwriter Name.",
+      "For matching: lower-cased, punctuation and extra spaces removed, so \"SMITH, Jane\" and \"smith jane\" are one person. A name typed two genuinely different ways still counts as two people (workbook tab 3, Rule 5).",
+      "Shown on screen with the most common original spelling."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "Reads a little better than true per-person productivity, because people who won nothing aren't counted."
+   ],
+   "code": "metrics/headcount.py premium_per_active_underwriter",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "Productivity (stand-in headcount)",
+   "on_the_page": true,
+   "label": "Premium / Active Underwriter",
+   "now": "$4.46M",
+   "prior": "$4.91M"
+  },
+  {
+   "key": "productivity_stand_in.premium_per_roster_underwriter",
+   "title": "Premium / Roster Underwriter",
+   "meaning": "A wider productivity view.",
+   "formula": "Bound Premium (RBS) \u00f7 Roster underwriters (DSR).",
+   "rows": "As the two figures it divides.",
+   "counted_per": "Person",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    },
+    {
+     "report": "DSR",
+     "names": [
+      "Producing Underwriter Name",
+      "Underwriter Name"
+     ],
+     "label": "Underwriter",
+     "steps": [
+      "Takes Producing Underwriter Name; where that's blank, Underwriter Name.",
+      "For matching: lower-cased, punctuation and extra spaces removed, so \"SMITH, Jane\" and \"smith jane\" are one person. A name typed two genuinely different ways still counts as two people (workbook tab 3, Rule 5).",
+      "Shown on screen with the most common original spelling."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "The two sides don't cover quite the same people: a few underwriters have bound premium in RBS but no DSR row at all, so they are in the premium and not in the count. \"Roster\" is therefore wider than Active on the DSR side only (open question 26)."
+   ],
+   "code": "metrics/headcount.py premium_per_roster_underwriter",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4 note",
+   "section": "Productivity (stand-in headcount)",
+   "on_the_page": true,
+   "label": "Premium / Roster Underwriter",
+   "now": "$4.12M",
+   "prior": "$4.78M"
+  },
+  {
+   "key": "productivity_stand_in.uw_margin_per_active_underwriter",
+   "title": "UW Margin / Active Underwriter",
+   "meaning": "Productivity adjusted for how profitable the business was.",
+   "formula": "Bound Premium \u00d7 UW Margin % \u00f7 Active underwriters.",
+   "rows": "As the three figures it uses.",
+   "counted_per": "Person",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Agency GELR (%)"
+     ],
+     "label": "Expected loss ratio (GELR)",
+     "steps": [
+      "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+      "Blanks kept as blank.",
+      "\"Usable GELR\" = not blank and not exactly 0."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Original Commission (%)"
+     ],
+     "label": "Commission",
+     "steps": [
+      "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+      "Blank counts as 0 (no commission)."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Producing Underwriter Name",
+      "Underwriter Name"
+     ],
+     "label": "Underwriter",
+     "steps": [
+      "Takes Producing Underwriter Name; where that's blank, Underwriter Name.",
+      "For matching: lower-cased, punctuation and extra spaces removed, so \"SMITH, Jane\" and \"smith jane\" are one person. A name typed two genuinely different ways still counts as two people (workbook tab 3, Rule 5).",
+      "Shown on screen with the most common original spelling."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [],
+   "code": "metrics/headcount.py uw_margin_per_active_underwriter",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "Productivity (stand-in headcount)",
+   "on_the_page": true,
+   "label": "UW Margin / Active Underwriter",
+   "now": "$1.98M",
+   "prior": "$2.10M"
+  },
+  {
+   "key": "drivers.premium_per_active_underwriter",
+   "title": "What drove Premium / Active Underwriter",
+   "meaning": "Splits the year-on-year change in premium per active underwriter into four drivers.",
+   "formula": "Premium \u00f7 Underwriters = (Submissions \u00f7 Underwriters) \u00d7 (Quotes \u00f7 Submissions) \u00d7 (Binds \u00f7 Quotes) \u00d7 (Premium \u00f7 Binds). Each driver's share of the total move = its log change \u00f7 the total log change \u00d7 the total move, so the shares add up exactly.",
+   "rows": "This period and the same months a year earlier, both after your filters.",
+   "counted_per": "Person",
+   "columns": [
+    {
+     "report": "DSR",
+     "names": [
+      "Policy Reference"
+     ],
+     "label": "Policy",
+     "steps": [
+      "Used as it is."
+     ],
+     "required": true
+    },
+    {
+     "report": "DSR",
+     "names": [
+      "XFI Policy Status"
+     ],
+     "label": "Policy status",
+     "steps": [
+      "Used as it is.",
+      "Counts as a quote if it is one of: Bound, Cancelled, Firm Order Noted, Live Policy, Non Renewed, Quote, Quote NTU, Renewed.",
+      "Counts as bound if it is one of: Bound, Cancelled, Firm Order Noted, Live Policy, Non Renewed, Renewed."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Policy Reference"
+     ],
+     "label": "Policy",
+     "steps": [
+      "Used as it is."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Producing Underwriter Name",
+      "Underwriter Name"
+     ],
+     "label": "Underwriter",
+     "steps": [
+      "Takes Producing Underwriter Name; where that's blank, Underwriter Name.",
+      "For matching: lower-cased, punctuation and extra spaces removed, so \"SMITH, Jane\" and \"smith jane\" are one person. A name typed two genuinely different ways still counts as two people (workbook tab 3, Rule 5).",
+      "Shown on screen with the most common original spelling."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "Underwriters = Active underwriters (stand-in), not true headcount.",
+    "Same method as the log-share bridge in Matt's build, but the waterfall his page draws allocates by Shapley value and carries a fifth margin term, so his contributions won't match ours figure for figure (workbook tab 12).",
+    "Not shown when either year has no submissions, quotes, binds or premium, or on Submission date basis (binds and premium need RBS)."
+   ],
+   "code": "metrics/drivers.py productivity_drivers",
+   "traced": false,
+   "check_note": "Arithmetic on Submissions, Quotes, Binds, Bound Premium and Active underwriters - each of those is checked against the raw columns.",
+   "workbook": "Tab 4",
+   "section": "Overview",
+   "on_the_page": true,
+   "label": "What drove Premium / Active Underwriter",
+   "now": null,
+   "prior": null
+  },
+  {
+   "key": "underwriters.submissions",
+   "title": "Submissions (per underwriter)",
+   "meaning": "How many risks came in for this underwriter.",
+   "formula": "Number of different policies.",
+   "rows": "Their DSR rows, ignoring the Underwriter filter.",
+   "counted_per": "Policy",
+   "columns": [
+    {
+     "report": "DSR",
+     "names": [
+      "Policy Reference"
+     ],
+     "label": "Policy",
+     "steps": [
+      "Used as it is."
+     ],
+     "required": true
+    },
+    {
+     "report": "DSR",
+     "names": [
+      "Producing Underwriter Name",
+      "Underwriter Name"
+     ],
+     "label": "Underwriter",
+     "steps": [
+      "Takes Producing Underwriter Name; where that's blank, Underwriter Name.",
+      "For matching: lower-cased, punctuation and extra spaces removed, so \"SMITH, Jane\" and \"smith jane\" are one person. A name typed two genuinely different ways still counts as two people (workbook tab 3, Rule 5).",
+      "Shown on screen with the most common original spelling."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [],
+   "code": "metrics/underwriters.py",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "Underwriters",
+   "on_the_page": true,
+   "label": "Submissions (per underwriter)",
+   "now": null,
+   "prior": null
+  },
+  {
+   "key": "underwriters.quote_rate",
+   "title": "Q/S (per underwriter)",
+   "meaning": "The share of their submissions they priced.",
+   "formula": "Their quotes \u00f7 their submissions.",
+   "rows": "Their DSR rows.",
+   "counted_per": "Policy",
+   "columns": [
+    {
+     "report": "DSR",
+     "names": [
+      "Policy Reference"
+     ],
+     "label": "Policy",
+     "steps": [
+      "Used as it is."
+     ],
+     "required": true
+    },
+    {
+     "report": "DSR",
+     "names": [
+      "XFI Policy Status"
+     ],
+     "label": "Policy status",
+     "steps": [
+      "Used as it is.",
+      "Counts as a quote if it is one of: Bound, Cancelled, Firm Order Noted, Live Policy, Non Renewed, Quote, Quote NTU, Renewed.",
+      "Counts as bound if it is one of: Bound, Cancelled, Firm Order Noted, Live Policy, Non Renewed, Renewed."
+     ],
+     "required": true
+    },
+    {
+     "report": "DSR",
+     "names": [
+      "Producing Underwriter Name",
+      "Underwriter Name"
+     ],
+     "label": "Underwriter",
+     "steps": [
+      "Takes Producing Underwriter Name; where that's blank, Underwriter Name.",
+      "For matching: lower-cased, punctuation and extra spaces removed, so \"SMITH, Jane\" and \"smith jane\" are one person. A name typed two genuinely different ways still counts as two people (workbook tab 3, Rule 5).",
+      "Shown on screen with the most common original spelling."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "Shown even on very few submissions - check the Submissions column."
+   ],
+   "code": "metrics/underwriters.py",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "Underwriters",
+   "on_the_page": true,
+   "label": "Q/S (per underwriter)",
+   "now": null,
+   "prior": null
+  },
+  {
+   "key": "underwriters.binds",
+   "title": "Binds (per underwriter)",
+   "meaning": "How many risks they won.",
+   "formula": "Number of different policies in RBS.",
+   "rows": "Their RBS rows.",
+   "counted_per": "Policy",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Policy Reference"
+     ],
+     "label": "Policy",
+     "steps": [
+      "Used as it is."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Producing Underwriter Name",
+      "Underwriter Name"
+     ],
+     "label": "Underwriter",
+     "steps": [
+      "Takes Producing Underwriter Name; where that's blank, Underwriter Name.",
+      "For matching: lower-cased, punctuation and extra spaces removed, so \"SMITH, Jane\" and \"smith jane\" are one person. A name typed two genuinely different ways still counts as two people (workbook tab 3, Rule 5).",
+      "Shown on screen with the most common original spelling."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [],
+   "code": "metrics/underwriters.py",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "Underwriters",
+   "on_the_page": true,
+   "label": "Binds (per underwriter)",
+   "now": null,
+   "prior": null
+  },
+  {
+   "key": "underwriters.bind_rate",
+   "title": "B/Q (per underwriter)",
+   "meaning": "The share of what they priced that they won.",
+   "formula": "Their binds (RBS) \u00f7 their quotes (DSR).",
+   "rows": "Their DSR and RBS rows.",
+   "counted_per": "Policy",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Policy Reference"
+     ],
+     "label": "Policy",
+     "steps": [
+      "Used as it is."
+     ],
+     "required": true
+    },
+    {
+     "report": "DSR",
+     "names": [
+      "Policy Reference"
+     ],
+     "label": "Policy",
+     "steps": [
+      "Used as it is."
+     ],
+     "required": true
+    },
+    {
+     "report": "DSR",
+     "names": [
+      "XFI Policy Status"
+     ],
+     "label": "Policy status",
+     "steps": [
+      "Used as it is.",
+      "Counts as a quote if it is one of: Bound, Cancelled, Firm Order Noted, Live Policy, Non Renewed, Quote, Quote NTU, Renewed.",
+      "Counts as bound if it is one of: Bound, Cancelled, Firm Order Noted, Live Policy, Non Renewed, Renewed."
+     ],
+     "required": true
+    },
+    {
+     "report": "DSR",
+     "names": [
+      "Producing Underwriter Name",
+      "Underwriter Name"
+     ],
+     "label": "Underwriter",
+     "steps": [
+      "Takes Producing Underwriter Name; where that's blank, Underwriter Name.",
+      "For matching: lower-cased, punctuation and extra spaces removed, so \"SMITH, Jane\" and \"smith jane\" are one person. A name typed two genuinely different ways still counts as two people (workbook tab 3, Rule 5).",
+      "Shown on screen with the most common original spelling."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Producing Underwriter Name",
+      "Underwriter Name"
+     ],
+     "label": "Underwriter",
+     "steps": [
+      "Takes Producing Underwriter Name; where that's blank, Underwriter Name.",
+      "For matching: lower-cased, punctuation and extra spaces removed, so \"SMITH, Jane\" and \"smith jane\" are one person. A name typed two genuinely different ways still counts as two people (workbook tab 3, Rule 5).",
+      "Shown on screen with the most common original spelling."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [],
+   "code": "metrics/underwriters.py",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "Underwriters",
+   "on_the_page": true,
+   "label": "B/Q (per underwriter)",
+   "now": null,
+   "prior": null
+  },
+  {
+   "key": "underwriters.premium",
+   "title": "Premium (per underwriter)",
+   "meaning": "Bound premium on their business.",
+   "formula": "Sum of premium across every line.",
+   "rows": "Their RBS rows.",
+   "counted_per": "Line",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Producing Underwriter Name",
+      "Underwriter Name"
+     ],
+     "label": "Underwriter",
+     "steps": [
+      "Takes Producing Underwriter Name; where that's blank, Underwriter Name.",
+      "For matching: lower-cased, punctuation and extra spaces removed, so \"SMITH, Jane\" and \"smith jane\" are one person. A name typed two genuinely different ways still counts as two people (workbook tab 3, Rule 5).",
+      "Shown on screen with the most common original spelling."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [],
+   "code": "metrics/underwriters.py",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "Underwriters",
+   "on_the_page": true,
+   "label": "Premium (per underwriter)",
+   "now": null,
+   "prior": null
+  },
+  {
+   "key": "underwriters.premium_vs_peer_median",
+   "title": "vs peer median",
+   "meaning": "How their premium compares with the middle underwriter.",
+   "formula": "Their premium \u00f7 the median premium of the underwriters in the table.",
+   "rows": "Underwriters in your other filters (the Underwriter filter is ignored), leaving out anyone with no premium.",
+   "counted_per": "Person",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Producing Underwriter Name",
+      "Underwriter Name"
+     ],
+     "label": "Underwriter",
+     "steps": [
+      "Takes Producing Underwriter Name; where that's blank, Underwriter Name.",
+      "For matching: lower-cased, punctuation and extra spaces removed, so \"SMITH, Jane\" and \"smith jane\" are one person. A name typed two genuinely different ways still counts as two people (workbook tab 3, Rule 5).",
+      "Shown on screen with the most common original spelling."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "1.50\u00d7 = 50% more premium than the middle underwriter.",
+    "A simpler comparison than Matt's: he medians annualised UW margin per underwriter over the same product or line, leaves the person out of their own median, and annualises by months employed (workbook tab 12)."
+   ],
+   "code": "metrics/underwriters.py",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "Underwriters",
+   "on_the_page": true,
+   "label": "vs peer median",
+   "now": null,
+   "prior": null
+  },
+  {
+   "key": "underwriters.uw_margin_pct",
+   "title": "UW Margin % (per underwriter)",
+   "meaning": "What's left of their premium after expected claims and commission.",
+   "formula": "As UW Margin %, on their rows only.",
+   "rows": "Their RBS rows with a usable GELR.",
+   "counted_per": "Line",
+   "columns": [
+    {
+     "report": "RBS",
+     "names": [
+      "Agency GELR (%)"
+     ],
+     "label": "Expected loss ratio (GELR)",
+     "steps": [
+      "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+      "Blanks kept as blank.",
+      "\"Usable GELR\" = not blank and not exactly 0."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Original Commission (%)"
+     ],
+     "label": "Commission",
+     "steps": [
+      "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+      "Blank counts as 0 (no commission)."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Agency Share Gross Written Premium (USD)"
+     ],
+     "label": "Premium",
+     "steps": [
+      "Read as a number.",
+      "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+      "Negative values (e.g. return premium) are kept, so totals are net."
+     ],
+     "required": true
+    },
+    {
+     "report": "RBS",
+     "names": [
+      "Producing Underwriter Name",
+      "Underwriter Name"
+     ],
+     "label": "Underwriter",
+     "steps": [
+      "Takes Producing Underwriter Name; where that's blank, Underwriter Name.",
+      "For matching: lower-cased, punctuation and extra spaces removed, so \"SMITH, Jane\" and \"smith jane\" are one person. A name typed two genuinely different ways still counts as two people (workbook tab 3, Rule 5).",
+      "Shown on screen with the most common original spelling."
+     ],
+     "required": true
+    }
+   ],
+   "catches": [
+    "Blank when they have no premium with a usable GELR."
+   ],
+   "code": "metrics/underwriters.py",
+   "traced": true,
+   "check_note": null,
+   "workbook": "Tab 4",
+   "section": "Underwriters",
+   "on_the_page": true,
+   "label": "UW Margin % (per underwriter)",
+   "now": null,
+   "prior": null
+  }
+ ],
+ "columns": [
+  {
+   "shared": "policy_reference",
+   "label": "Policy",
+   "dsr": [
+    "Policy Reference"
+   ],
+   "rbs": [
+    "Policy Reference"
+   ],
+   "steps": [
+    "Used as it is."
+   ],
+   "dsr_steps": [],
+   "rbs_steps": [],
+   "required": true,
+   "used_by": [
+    "Average Deal Size",
+    "Average policy length",
+    "B/Q (per underwriter)",
+    "Binds",
+    "Binds (per underwriter)",
+    "End-to-end win rate (B/S)",
+    "Q/S (per underwriter)",
+    "Quote rate (Q/S)",
+    "Quotes",
+    "Submissions",
+    "Submissions (per underwriter)",
+    "What drove Premium / Active Underwriter",
+    "Win rate (B/Q)"
+   ]
+  },
+  {
+   "shared": "status",
+   "label": "Policy status",
+   "dsr": [
+    "XFI Policy Status"
+   ],
+   "rbs": [],
+   "steps": [
+    "Used as it is.",
+    "Counts as a quote if it is one of: Bound, Cancelled, Firm Order Noted, Live Policy, Non Renewed, Quote, Quote NTU, Renewed.",
+    "Counts as bound if it is one of: Bound, Cancelled, Firm Order Noted, Live Policy, Non Renewed, Renewed."
+   ],
+   "dsr_steps": [],
+   "rbs_steps": [],
+   "required": true,
+   "used_by": [
+    "B/Q (per underwriter)",
+    "Q/S (per underwriter)",
+    "Quote rate (Q/S)",
+    "Quotes",
+    "What drove Premium / Active Underwriter",
+    "Win rate (B/Q)"
+   ]
+  },
+  {
+   "shared": "underwriter",
+   "label": "Underwriter",
+   "dsr": [
+    "Producing Underwriter Name",
+    "Underwriter Name"
+   ],
+   "rbs": [
+    "Producing Underwriter Name",
+    "Underwriter Name"
+   ],
+   "steps": [
+    "Takes Producing Underwriter Name; where that's blank, Underwriter Name.",
+    "For matching: lower-cased, punctuation and extra spaces removed, so \"SMITH, Jane\" and \"smith jane\" are one person. A name typed two genuinely different ways still counts as two people (workbook tab 3, Rule 5).",
+    "Shown on screen with the most common original spelling."
+   ],
+   "dsr_steps": [],
+   "rbs_steps": [],
+   "required": true,
+   "used_by": [
+    "Active underwriters (stand-in)",
+    "B/Q (per underwriter)",
+    "Binds (per underwriter)",
+    "Premium (per underwriter)",
+    "Premium / Active Underwriter",
+    "Premium / Roster Underwriter",
+    "Q/S (per underwriter)",
+    "Roster underwriters (stand-in)",
+    "Submissions (per underwriter)",
+    "UW Margin % (per underwriter)",
+    "UW Margin / Active Underwriter",
+    "What drove Premium / Active Underwriter",
+    "vs peer median"
+   ]
+  },
+  {
+   "shared": "entity",
+   "label": "Entity",
+   "dsr": [
+    "Producing Mosaic Entity"
+   ],
+   "rbs": [
+    "Producing Mosaic Entity"
+   ],
+   "steps": [
+    "Extra spaces removed."
+   ],
+   "dsr_steps": [
+    "Renamed to RBS's spelling: \"Mosaic Syndicate 2610\" -> \"Mosaic 2610\"; \"Mosaic Syndicate 5431 (EEA)\" -> \"Mosaic 5431\"."
+   ],
+   "rbs_steps": [],
+   "required": true,
+   "used_by": []
+  },
+  {
+   "shared": "line_of_business",
+   "label": "Line of business",
+   "dsr": [
+    "Class Of Business"
+   ],
+   "rbs": [
+    "Class of Business"
+   ],
+   "steps": [
+    "Used as it is."
+   ],
+   "dsr_steps": [],
+   "rbs_steps": [],
+   "required": true,
+   "used_by": []
+  },
+  {
+   "shared": "business_type",
+   "label": "New or renewal",
+   "dsr": [
+    "Business Type"
+   ],
+   "rbs": [
+    "Renewal Status"
+   ],
+   "steps": [],
+   "dsr_steps": [
+    "Where the same policy is also in RBS and the two disagree, replaced by RBS's Renewal Status (the most common value across that policy's RBS lines). Policies only in DSR keep their own value (workbook tab 3, Rule 2)."
+   ],
+   "rbs_steps": [
+    "Used as it is."
+   ],
+   "required": true,
+   "used_by": [
+    "New vs. Renewal mix",
+    "RARC",
+    "Renewal premium growth"
+   ]
+  },
+  {
+   "shared": "placement",
+   "label": "Placement",
+   "dsr": [
+    "Mapped Method of Placement (MOP)"
+   ],
+   "rbs": [
+    "Mapped Method of Placement (MOP)"
+   ],
+   "steps": [
+    "Used as it is."
+   ],
+   "dsr_steps": [],
+   "rbs_steps": [],
+   "required": true,
+   "used_by": [
+    "Placement mix"
+   ]
+  },
+  {
+   "shared": "inception_date",
+   "label": "Inception date",
+   "dsr": [
+    "Inception date"
+   ],
+   "rbs": [
+    "Inception Date"
+   ],
+   "steps": [
+    "Read as a date. A value that can't be read leaves the row out of every period (a warning is logged if more than 2% fail)."
+   ],
+   "dsr_steps": [],
+   "rbs_steps": [],
+   "required": true,
+   "used_by": []
+  },
+  {
+   "shared": "submission_date",
+   "label": "Submission date",
+   "dsr": [
+    "Submission Date"
+   ],
+   "rbs": [],
+   "steps": [
+    "Read as a date, as above. Also sets \"data as at\" (the latest submission)."
+   ],
+   "dsr_steps": [],
+   "rbs_steps": [],
+   "required": true,
+   "used_by": []
+  },
+  {
+   "shared": "premium",
+   "label": "Premium",
+   "dsr": [
+    "Agency Share Gross Written Premium (USD)"
+   ],
+   "rbs": [
+    "Agency Share Gross Written Premium (USD)"
+   ],
+   "steps": [
+    "Read as a number.",
+    "Blank counts as $0 (a warning is logged if more than 2% of filled cells can't be read as numbers).",
+    "Negative values (e.g. return premium) are kept, so totals are net."
+   ],
+   "dsr_steps": [],
+   "rbs_steps": [],
+   "required": true,
+   "used_by": [
+    "Average Deal Size",
+    "Average agency share",
+    "Bound Premium",
+    "Broker concentration",
+    "Commission cover",
+    "Commission \u2013 book version",
+    "Commission \u2013 margin version",
+    "GELR \u2013 book version",
+    "GELR \u2013 margin version",
+    "Margin cover",
+    "New vs. Renewal mix",
+    "Placement mix",
+    "Premium (per underwriter)",
+    "Premium / Active Underwriter",
+    "Premium / Roster Underwriter",
+    "Rate Adequacy",
+    "Renewal premium growth",
+    "SCM share",
+    "UW Margin %",
+    "UW Margin % (per underwriter)",
+    "UW Margin % over rows that record a commission",
+    "UW Margin / Active Underwriter",
+    "What drove Premium / Active Underwriter",
+    "vs peer median"
+   ]
+  },
+  {
+   "shared": "gelr",
+   "label": "Expected loss ratio (GELR)",
+   "dsr": [],
+   "rbs": [
+    "Agency GELR (%)"
+   ],
+   "steps": [
+    "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+    "Blanks kept as blank.",
+    "\"Usable GELR\" = not blank and not exactly 0."
+   ],
+   "dsr_steps": [],
+   "rbs_steps": [],
+   "required": true,
+   "used_by": [
+    "Commission cover",
+    "Commission \u2013 margin version",
+    "GELR \u2013 book version",
+    "GELR \u2013 margin version",
+    "Margin cover",
+    "Rate Adequacy",
+    "UW Margin %",
+    "UW Margin % (per underwriter)",
+    "UW Margin % over rows that record a commission",
+    "UW Margin / Active Underwriter"
+   ]
+  },
+  {
+   "shared": "commission",
+   "label": "Commission",
+   "dsr": [],
+   "rbs": [
+    "Original Commission (%)"
+   ],
+   "steps": [
+    "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+    "Blank counts as 0 (no commission)."
+   ],
+   "dsr_steps": [],
+   "rbs_steps": [],
+   "required": true,
+   "used_by": [
+    "Commission cover",
+    "Commission \u2013 book version",
+    "Commission \u2013 margin version",
+    "UW Margin %",
+    "UW Margin % (per underwriter)",
+    "UW Margin % over rows that record a commission",
+    "UW Margin / Active Underwriter"
+   ]
+  },
+  {
+   "shared": "plan_loss_ratio",
+   "label": "Plan loss ratio",
+   "dsr": [],
+   "rbs": [
+    "Business Plan Loss Ratio (%)"
+   ],
+   "steps": [
+    "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+    "Blanks kept as blank."
+   ],
+   "dsr_steps": [],
+   "rbs_steps": [],
+   "required": true,
+   "used_by": [
+    "Rate Adequacy"
+   ]
+  },
+  {
+   "shared": "layer_type",
+   "label": "Layer",
+   "dsr": [],
+   "rbs": [
+    "Type of Layer"
+   ],
+   "steps": [
+    "Used as it is (Primary / Excess / Quota Share)."
+   ],
+   "dsr_steps": [],
+   "rbs_steps": [],
+   "required": true,
+   "used_by": [
+    "Median attachment point \u2013 Excess",
+    "Median attachment point \u2013 Primary",
+    "Primary share"
+   ]
+  },
+  {
+   "shared": "slip_lead",
+   "label": "Slip lead",
+   "dsr": [],
+   "rbs": [
+    "Slip Lead"
+   ],
+   "steps": [
+    "Used as it is. Counts as Mosaic when the text contains \"Mosaic\" (any capitals)."
+   ],
+   "dsr_steps": [],
+   "rbs_steps": [],
+   "required": true,
+   "used_by": [
+    "Mosaic as lead"
+   ]
+  },
+  {
+   "shared": "excess",
+   "label": "Excess",
+   "dsr": [],
+   "rbs": [
+    "Excess (USD)"
+   ],
+   "steps": [
+    "Read as a number; blanks kept as blank."
+   ],
+   "dsr_steps": [],
+   "rbs_steps": [],
+   "required": true,
+   "used_by": [
+    "Median attachment point \u2013 Excess"
+   ]
+  },
+  {
+   "shared": "deductible",
+   "label": "Deductible",
+   "dsr": [],
+   "rbs": [
+    "Deductible (USD)"
+   ],
+   "steps": [
+    "Read as a number; blanks kept as blank."
+   ],
+   "dsr_steps": [],
+   "rbs_steps": [],
+   "required": true,
+   "used_by": [
+    "Median attachment point \u2013 Primary"
+   ]
+  },
+  {
+   "shared": "exposure",
+   "label": "Exposure (limit)",
+   "dsr": [],
+   "rbs": [
+    "Agency Exposure (USD)"
+   ],
+   "steps": [
+    "Read as a number; blanks kept as blank."
+   ],
+   "dsr_steps": [],
+   "rbs_steps": [],
+   "required": true,
+   "used_by": [
+    "Median limit"
+   ]
+  },
+  {
+   "shared": "agency_share",
+   "label": "Agency line share",
+   "dsr": [],
+   "rbs": [
+    "Agency Line/Share (%)"
+   ],
+   "steps": [
+    "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+    "Blanks kept as blank."
+   ],
+   "dsr_steps": [],
+   "rbs_steps": [],
+   "required": false,
+   "used_by": [
+    "Average agency share"
+   ]
+  },
+  {
+   "shared": "mosaic_1609_premium",
+   "label": "Mosaic 1609 premium",
+   "dsr": [],
+   "rbs": [
+    "Mosaic 1609 Share Gross Written Premium (USD)"
+   ],
+   "steps": [
+    "Read as a number; blanks kept as blank (add nothing to a total)."
+   ],
+   "dsr_steps": [],
+   "rbs_steps": [],
+   "required": false,
+   "used_by": [
+    "Rate Adequacy \u2013 RBS benchmark check",
+    "SCM share"
+   ]
+  },
+  {
+   "shared": "mosaic_1609_benchmark",
+   "label": "Mosaic 1609 benchmark premium",
+   "dsr": [],
+   "rbs": [
+    "Mosaic 1609 Share Benchmark Premium (USD)"
+   ],
+   "steps": [
+    "Read as a number; blanks kept as blank."
+   ],
+   "dsr_steps": [],
+   "rbs_steps": [],
+   "required": false,
+   "used_by": [
+    "Rate Adequacy \u2013 RBS benchmark check"
+   ]
+  },
+  {
+   "shared": "broker",
+   "label": "Broker",
+   "dsr": [],
+   "rbs": [
+    "Broker Name"
+   ],
+   "steps": [
+    "Used exactly as typed - one broker spelled two ways counts as two."
+   ],
+   "dsr_steps": [],
+   "rbs_steps": [],
+   "required": false,
+   "used_by": [
+    "Broker concentration"
+   ]
+  },
+  {
+   "shared": "tenor_months",
+   "label": "Policy length",
+   "dsr": [],
+   "rbs": [
+    "Tenor in Months"
+   ],
+   "steps": [
+    "Read as a number; blanks kept as blank."
+   ],
+   "dsr_steps": [],
+   "rbs_steps": [],
+   "required": false,
+   "used_by": [
+    "Average policy length"
+   ]
+  },
+  {
+   "shared": "rarc",
+   "label": "Rate change (RARC)",
+   "dsr": [],
+   "rbs": [
+    "Risk Adjusted Rate Change (%)"
+   ],
+   "steps": [
+    "Stored in the export as a fraction (0.40); multiplied by 100 to read as 40.0%. The refresh stops if the percentage columns don't agree on this.",
+    "Blanks kept as blank. 100% = rate unchanged."
+   ],
+   "dsr_steps": [],
+   "rbs_steps": [],
+   "required": false,
+   "used_by": [
+    "RARC"
+   ]
+  },
+  {
+   "shared": "expired_premium",
+   "label": "Expiring premium",
+   "dsr": [],
+   "rbs": [
+    "Expired Gross Premium Agency (USD) of previous policy"
+   ],
+   "steps": [
+    "Read as a number; blanks kept as blank."
+   ],
+   "dsr_steps": [],
+   "rbs_steps": [],
+   "required": false,
+   "used_by": [
+    "RARC",
+    "Renewal premium growth"
+   ]
+  }
+ ],
+ "questions": [
+  {
+   "section": "OPEN - WORTH RAISING"
+  },
+  {
+   "number": "1",
+   "question": "GELR book version: should a row with no GELR count as 0, or be left out?",
+   "today": "Counts as 0 (reading tab 4's \"across all rows\" literally). Makes GELR look slightly better (40.55% vs 40.63% margin version, all years).",
+   "options": "Leave blank rows out - then the book and margin versions are the same number.",
+   "status": "Open",
+   "who": "Matt / Finance",
+   "raised": "18 Sep 2026",
+   "where": "metrics/quality.py gelr_book_basis"
+  },
+  {
+   "number": "2",
+   "question": "UW Margin %: should Mosaic's own internal commission also be subtracted?",
+   "today": "Not subtracted: 100 - GELR - Commission.",
+   "options": "Also subtract Mosaic 1609 Agency Commission.",
+   "status": "Open",
+   "who": "Matt / Finance",
+   "raised": "18 Sep 2026",
+   "where": "metrics/quality.py uw_margin_pct"
+  },
+  {
+   "number": "3",
+   "question": "Why do DSR and RBS disagree by more than \"a percent or two\"?",
+   "today": "Keeps RBS's figure, shows a red badge. Jan-Aug 2026: premium 9.1% apart, binds 3.4% apart (all years: 11.9% and 3.7%).",
+   "options": "-",
+   "status": "Open",
+   "who": "Owners of the DSR and RBS extracts",
+   "raised": "18 Sep 2026",
+   "where": "reconcile/cross_check.py; RECONCILIATION_TOLERANCE_PCT"
+  },
+  {
+   "number": "5",
+   "question": "Which filters should the dashboard open on?",
+   "today": "Everything (All business, All placement), YTD, inception date.",
+   "options": "Match Matt: New + Open Market, which his LOB workbook reconciles to.",
+   "status": "Open",
+   "who": "Matt",
+   "raised": "18 Sep 2026",
+   "where": "DEFAULT_... in config/settings.py"
+  },
+  {
+   "number": "6",
+   "question": "Product filter: where does Matt's product list (Cyber Tech, W&I Tax, ...) come from?",
+   "today": "Filter greyed out.",
+   "options": "Get the product roster / Lloyd's Risk Code mapping and add a product column in ingest/.",
+   "status": "Open",
+   "who": "Matt",
+   "raised": "18 Sep 2026",
+   "where": "ingest/clean_rbs.py, ingest/clean_dsr.py, scope/filter.py"
+  },
+  {
+   "number": "7",
+   "question": "Entities: our data has 12 (incl. syndicates 1609, 2610, 5399, 5431, SP, Asta Europe); Matt's list has 7 offices. Does he group them?",
+   "today": "Shows all 12 as they appear in the reports.",
+   "options": "Add a grouping (e.g. syndicate -> office) to ENTITY_ALIASES.",
+   "status": "Open",
+   "who": "Matt",
+   "raised": "18 Sep 2026",
+   "where": "config/field_map.py ENTITY_ALIASES"
+  },
+  {
+   "number": "8",
+   "question": "Underwriter names spelled two ways - build a manual list?",
+   "today": "Tidies capitals, punctuation and spaces only, and flags likely pairs in the Underwriters table (\"possible duplicate\") without merging them. Flagged on the real data: \"Stedman, Rob\" / \"Stedman, Robert\", \"Hirst, Justin\" / \"Hurst, Justin\", \"Macdonald, Noelle\" / \"Macdonald, Nolle\", \"Deutsch, Ze'ev\" / \"Deutsch, Zeev\" (the apostrophe splits the name).",
+   "options": "A short hand-made alias list, checked by someone who knows the team.",
+   "status": "Open",
+   "who": "UW team lead",
+   "raised": "18 Sep 2026",
+   "where": "ingest/underwriter_names.py"
+  },
+  {
+   "number": "9",
+   "question": "RBS's \"Achieved Price (%)\" column: what unit is it in?",
+   "today": "Not used. The Rate Adequacy double-check uses RBS's own benchmark premium instead (Mosaic 1609 premium / 1609 benchmark premium).",
+   "options": "Use Achieved Price once its unit is known (median ~1.3 after scaling, outliers in the hundreds of thousands).",
+   "status": "Open",
+   "who": "RBS extract owner",
+   "raised": "18 Sep 2026",
+   "where": "metrics/quality.py rate_adequacy_rbs_benchmark"
+  },
+  {
+   "number": "10",
+   "question": "Peer median: leave out underwriters with no premium?",
+   "today": "Left out, as in Matt's build, so a zero doesn't drag the middle figure down.",
+   "options": "Include them (median falls).",
+   "status": "Open - confirm",
+   "who": "Matt",
+   "raised": "18 Sep 2026",
+   "where": "PEER_MEDIAN_EXCLUDES_ZERO_PREMIUM in config/settings.py"
+  },
+  {
+   "number": "19",
+   "question": "Mosaic as Lead: which Slip Lead values count as \"us\"?",
+   "today": "Any Slip Lead containing \"Mosaic\": Mosaic 1609, the offices (UK, US, Dubai...), but also Mosaic Asta Europe (1,283 rows) and Mosaic 5399 (1,165 rows).",
+   "options": "Only Mosaic 1609 and the Mosaic offices; or an agreed list.",
+   "status": "Open",
+   "who": "Matt",
+   "raised": "18 Sep 2026",
+   "where": "metrics/composition.py mosaic_as_lead"
+  },
+  {
+   "number": "22",
+   "question": "Some underwriters are credited differently in DSR and RBS - which is right?",
+   "today": "Each report's own underwriter columns are used. On the real data one underwriter has 3 DSR submissions but 22 RBS binds (a 733% win rate, shown greyed as \"few quotes\"): their bound business is credited to them in RBS but mostly to someone else in DSR.",
+   "options": "Credit binds by DSR's underwriter where the policy is in both, as New/Renewal already follows one report.",
+   "status": "Open",
+   "who": "Extract owners / Matt",
+   "raised": "18 Sep 2026",
+   "where": "ingest/clean_dsr.py, ingest/clean_rbs.py"
+  },
+  {
+   "number": "23",
+   "question": "Headline premium: RBS (ours) or DSR (Matt's)?",
+   "today": "RBS, with DSR as a cross-check (9.1% apart on Jan\u2013Aug 2026 - flagged). Matt's headline premium is the DSR one, and his per-head and deal-size figures sit on that base, so his headline figure is our cross-check figure.",
+   "options": "Match Matt and lead with DSR premium; or keep RBS and expect a gap when comparing with his deck.",
+   "status": "Open",
+   "who": "Matt / Finance",
+   "raised": "18 Sep 2026",
+   "where": "metrics/premium.py; tab 12"
+  },
+  {
+   "number": "24",
+   "question": "GELR: should 2021 inceptions be left out, as Matt's does?",
+   "today": "Every year in the filters is included.",
+   "options": "Drop 2021 inceptions from GELR (and say why), as his tooltip says his does.",
+   "status": "Open",
+   "who": "Matt",
+   "raised": "18 Sep 2026",
+   "where": "metrics/quality.py"
+  },
+  {
+   "number": "25",
+   "question": "Blank or zero commission counts as \"none charged\" - should it?",
+   "today": "Counted as 0% in both the book and the margin version, while a blank or zero GELR is treated as unusable and left out. So the two halves of 100 - GELR - Commission handle a missing value in opposite ways, and UW Margin % reads high: 11.5% of the margin premium records no commission; margin reads 44.4% and 43.0% over the rows that do record one. The page now says this under the figure.",
+   "options": "Leave rows with no recorded commission out of the margin version too (as GELR does); or keep the current rule and rely on the note.",
+   "status": "Open",
+   "who": "Matt / Finance",
+   "raised": "18 Sep 2026",
+   "where": "ingest/clean_rbs.py; metrics/quality.py"
+  },
+  {
+   "number": "26",
+   "question": "Should B/Q and B/S only count binds that DSR knows about?",
+   "today": "They divide RBS binds by DSR quotes / submissions, as tab 4 defines. But the funnel isn't nested: 169 of 5,034 bound policies (9.0% of premium) have no DSR row at all; B/Q reads 43.8% and would read 42.3% without them. On a narrow slice or one underwriter the rate can pass 100% (the page flags that). Matt's build doesn't have this problem because his binds come from DSR too.",
+   "options": "Restrict the numerator to binds present in DSR (a true funnel, slightly lower); or keep RBS binds and rely on the note.",
+   "status": "Open",
+   "who": "Matt / extract owners",
+   "raised": "18 Sep 2026",
+   "where": "metrics/funnel.py binds_not_in_dsr"
+  },
+  {
+   "number": "27",
+   "question": "Entity is recorded per line in RBS but per policy in DSR",
+   "today": "The entity filter keeps matching LINES, so a policy whose lines sit under two entities is counted as a bind under each while only its own lines' premium is summed: 99 policies in scope have lines under more than one entity, so binds summed over the 12 entities come to 5,183 against 5,034 actual (+3.0%). Average Deal Size for a small entity can therefore read far below the book figure.",
+   "options": "Assign each policy to one entity (e.g. the one with most premium) before counting binds; or leave it and note that entity slices don't add up to the total.",
+   "status": "Open",
+   "who": "Extract owners / Matt",
+   "raised": "18 Sep 2026",
+   "where": "scope/filter.py; metrics/funnel.py"
+  },
+  {
+   "number": "28",
+   "question": "A few extreme rate changes set RARC",
+   "today": "RARC is a premium-weighted average with no cap: 48 rows book-wide are beyond \u00b1300% (largest 2,965%); dropping the in-scope ones moves RARC by about 1.7 points. The refresh now logs a warning naming how many rows are beyond the limit.",
+   "options": "Leave them out, or cap them, once someone confirms whether they are real.",
+   "status": "Open",
+   "who": "RBS extract owner",
+   "raised": "18 Sep 2026",
+   "where": "ingest/clean_rbs.py RARC_EXTREME_PCT"
+  },
+  {
+   "section": "DECIDED - WITH THE REASON"
+  },
+  {
+   "number": "4",
+   "question": "Should rates built on very few deals be hidden or flagged?",
+   "today": "Shown, but greyed out with a \"few binds / few quotes / few submissions\" tag when they rest on fewer than 20 policies - and per-person figures with a \"few underwriters\" tag below 5 underwriters. Nothing is hidden (tab 4: blank only when there's nothing to divide by).",
+   "options": "Hide below a minimum instead; or change the minimums.",
+   "status": "Decided - flag, don't hide",
+   "who": "Matt (to confirm the minimums)",
+   "raised": "18 Sep 2026",
+   "where": "SMALL_SAMPLE_MIN, SMALL_TEAM_MIN in config/settings.py; server/insights.py"
+  },
+  {
+   "number": "11",
+   "question": "Submission date basis with RBS figures?",
+   "today": "Only DSR-only figures shown; the rest blank with a note.",
+   "options": "Matt's build mixes submission-month DSR with inception-month RBS.",
+   "status": "Decided",
+   "who": "Tab 3, Rule 3",
+   "raised": "18 Sep 2026",
+   "where": "pipeline/build_dashboard_data.py"
+  },
+  {
+   "number": "12",
+   "question": "Rate Adequacy: all premium vs benchmark from some rows?",
+   "today": "Same rows on both sides (129.0% vs Matt-style 129.2%, all years).",
+   "options": "Matt's version overstates.",
+   "status": "Decided",
+   "who": "Tab 4 note",
+   "raised": "18 Sep 2026",
+   "where": "metrics/quality.py rate_adequacy"
+  },
+  {
+   "number": "13",
+   "question": "Peer group when one underwriter is picked?",
+   "today": "Everyone in the other filters - the picked underwriter is highlighted among them.",
+   "options": "Only themselves (always reads 1.0x).",
+   "status": "Decided",
+   "who": "Common sense",
+   "raised": "18 Sep 2026",
+   "where": "pipeline/build_dashboard_data.py (underwriters)"
+  },
+  {
+   "number": "14",
+   "question": "Average Policy Length: per line or per policy?",
+   "today": "Once per policy (18.3 months Jan-Aug 2026).",
+   "options": "Per line counts long multi-line policies several times.",
+   "status": "Decided",
+   "who": "Tab 3, Rule 4",
+   "raised": "18 Sep 2026",
+   "where": "metrics/composition.py average_policy_length"
+  },
+  {
+   "number": "15",
+   "question": "Renewal Premium Growth with the Business filter on New?",
+   "today": "Still looks at renewals only, like RARC.",
+   "options": "Blank on New.",
+   "status": "Decided",
+   "who": "Same rule as RARC (tab 4)",
+   "raised": "18 Sep 2026",
+   "where": "metrics/composition.py renewal_premium_growth"
+  },
+  {
+   "number": "16",
+   "question": "Attachment points: blank values?",
+   "today": "Excess: blank left out. Primary: blank deductible counts as 0, per the tab 4 note - which is worth revisiting, because it halves the figure: 29,274 ours (blank = 0) vs 58,547 if blanks were left out (Jan\u2013Aug 2026).",
+   "options": "Leave blank deductibles out of the Primary median too.",
+   "status": "Decided - worth revisiting",
+   "who": "Tab 4 note; measured in tab 12",
+   "raised": "18 Sep 2026",
+   "where": "metrics/quality.py"
+  },
+  {
+   "number": "17",
+   "question": "SCM Share definition",
+   "today": "1 - (Mosaic 1609 share of premium / all agency premium), as Matt.",
+   "options": "-",
+   "status": "Decided",
+   "who": "Matt's build",
+   "raised": "18 Sep 2026",
+   "where": "metrics/composition.py scm_share"
+  },
+  {
+   "number": "18",
+   "question": "Timeframe: when is a month \"complete\"?",
+   "today": "Data runs to the latest DSR submission date. A month is complete once that date reaches its last day (15 Sep 2026 -> Aug is the last complete month).",
+   "options": "-",
+   "status": "Decided",
+   "who": "Same as Matt",
+   "raised": "18 Sep 2026",
+   "where": "scope/period.py"
+  },
+  {
+   "number": "20",
+   "question": "Negative premium rows (e.g. return premium)?",
+   "today": "Included as they are, so totals are net. 5 RBS rows, 4 DSR rows.",
+   "options": "Leave them out.",
+   "status": "Decided",
+   "who": "Totals should match the reports",
+   "raised": "18 Sep 2026",
+   "where": "ingest/clean_rbs.py"
+  },
+  {
+   "number": "21",
+   "question": "Blank premium?",
+   "today": "Counts as $0 (a warning is logged if a filled cell can't be read as a number). 26% of DSR rows are blank - mostly declined submissions, which never had a price. 46 RBS rows are blank.",
+   "options": "-",
+   "status": "Decided",
+   "who": "No premium = $0",
+   "raised": "18 Sep 2026",
+   "where": "ingest/clean_dsr.py, ingest/clean_rbs.py"
+  }
+ ],
+ "checks": [
+  {
+   "section": "READING THE EXPORTS"
+  },
+  {
+   "check": "Every column we need is there",
+   "looks_at": "The list of required columns in each report, by name.",
+   "if_it_fails": "Refuses to run and names the missing column(s), rather than treating them as blank.",
+   "kind": "Stops the run",
+   "where": "require_columns in ingest/validation.py",
+   "result": "Pass"
+  },
+  {
+   "check": "Optional columns",
+   "looks_at": "Agency line share, Mosaic 1609 premium and benchmark, broker, policy length, RARC, expiring premium.",
+   "if_it_fails": "Logs a warning; only the figures that use the column go blank.",
+   "kind": "Warns",
+   "where": "OPTIONAL_COLUMNS in ingest/clean_rbs.py",
+   "result": "All present"
+  },
+  {
+   "check": "Percentages: fraction or percent?",
+   "looks_at": "GELR, Commission and Plan Loss Ratio together - are they stored as 0.40 or as 40.0?",
+   "if_it_fails": "If the three disagree, refuses to run rather than guessing (a wrong guess once produced a GELR of 0.4%).",
+   "kind": "Stops the run",
+   "where": "_percent_columns_to_percent_units in ingest/clean_rbs.py",
+   "result": "Stored as fractions (0.40), scaled x100"
+  },
+  {
+   "check": "GELR sanity range",
+   "looks_at": "The middle GELR after unit handling: it must land between 5% and 95%.",
+   "if_it_fails": "Refuses to run - the unit decision above was probably wrong.",
+   "kind": "Stops the run",
+   "where": "GELR_SANITY_RANGE in ingest/clean_rbs.py",
+   "result": "Middle GELR 35.4% (range 5-95%) - pass"
+  },
+  {
+   "check": "Numbers and dates that won't read",
+   "looks_at": "Cells that had a value but couldn't be read as a number or a date (more than 2% of filled cells).",
+   "if_it_fails": "Logs a warning naming the column and the share lost. The rows stay, with a blank.",
+   "kind": "Warns",
+   "where": "warn_if_coercion_dropped_data in ingest/validation.py",
+   "result": "No warnings"
+  },
+  {
+   "check": "Underwriter not attributed",
+   "looks_at": "Share of DSR rows with no underwriter on either column (over 10%).",
+   "if_it_fails": "Logs a warning: underwriter-level figures rest on a smaller population.",
+   "kind": "Warns",
+   "where": "ingest/clean_dsr.py",
+   "result": "0% of DSR rows - no warning"
+  },
+  {
+   "check": "Cached copy is the right one",
+   "looks_at": "File size and modified time of each .xlsx against the cache signature.",
+   "if_it_fails": "Re-reads the Excel file instead of using a stale cache.",
+   "kind": "Automatic",
+   "where": "data_sources/excel_source.py",
+   "result": "Pass"
+  },
+  {
+   "check": "Figures never outlive their data",
+   "looks_at": "The per-filter result cache.",
+   "if_it_fails": "Cleared on every background re-read, so an old figure can't be shown against new data.",
+   "kind": "Automatic",
+   "where": "server/app.py",
+   "result": "Pass"
+  },
+  {
+   "section": "DSR AGAINST RBS"
+  },
+  {
+   "check": "Bound premium, both ways",
+   "looks_at": "RBS's premium against the same premium column on DSR's bound rows, same filters. Tolerance 2% (tab 3, Rule 6).",
+   "if_it_fails": "Keeps RBS's figure, logs a warning, and shows a red badge you can click for both figures.",
+   "kind": "Warns + shows on the page",
+   "where": "reconcile/cross_check.py; server/insights.py",
+   "result": "9.1% apart on Jan\u2013Aug 2026 - flagged"
+  },
+  {
+   "check": "Bind count, both ways",
+   "looks_at": "RBS's distinct policies against DSR's distinct policies with a bound status.",
+   "if_it_fails": "As above.",
+   "kind": "Warns + shows on the page",
+   "where": "reconcile/cross_check.py",
+   "result": "3.4% apart on Jan\u2013Aug 2026 - flagged"
+  },
+  {
+   "check": "A gap against zero",
+   "looks_at": "A gap where RBS is zero and DSR isn't.",
+   "if_it_fails": "Reports \"can't be worked out\" instead of inventing a 100% gap.",
+   "kind": "Shows on the page",
+   "where": "is_undefined_gap in reconcile/cross_check.py",
+   "result": "No such case in this extract"
+  },
+  {
+   "check": "Submission date and RBS",
+   "looks_at": "Any attempt to filter RBS by submission date.",
+   "if_it_fails": "Raises an error (RBS has no submission date); the page shows DSR-only figures with a note.",
+   "kind": "Stops that figure",
+   "where": "apply_scope in scope/filter.py",
+   "result": "Pass"
+  },
+  {
+   "section": "TOLD TO THE READER"
+  },
+  {
+   "check": "Too few deals",
+   "looks_at": "Every rate and average: the policies behind it (fewer than 20), and per-person figures (fewer than 5 underwriters).",
+   "if_it_fails": "Greys the figure and tags it \"few binds / quotes / submissions / underwriters\". Never hidden.",
+   "kind": "Shows on the page",
+   "where": "server/insights.py; config/settings.py",
+   "result": "In use"
+  },
+  {
+   "check": "Margin cover",
+   "looks_at": "Share of premium with a usable GELR behind UW Margin % (under 90%).",
+   "if_it_fails": "Adds a note under UW Margin % saying how much of the premium it rests on.",
+   "kind": "Shows on the page",
+   "where": "cover_note in server/insights.py",
+   "result": "99.5% of premium on Jan\u2013Aug 2026 - above 90%, no note"
+  },
+  {
+   "check": "Months that aren't complete",
+   "looks_at": "The selected period against the last complete month.",
+   "if_it_fails": "Warns that this year's figures will look low next to last year's, and points at \"This year so far\".",
+   "kind": "Shows on the page",
+   "where": "incomplete_period_notice in server/insights.py",
+   "result": "In use"
+  },
+  {
+   "check": "Developing months in trends",
+   "looks_at": "The right-hand end of the trend charts.",
+   "if_it_fails": "Says quotes and binds arrive after submissions, so a late dip is usually timing.",
+   "kind": "Shows on the page",
+   "where": "server/panels.py",
+   "result": "In use"
+  },
+  {
+   "check": "Possible duplicate names",
+   "looks_at": "Underwriter names that are probably one person typed two ways.",
+   "if_it_fails": "Tags them in the Underwriters table and the CSV. Never merges them.",
+   "kind": "Shows on the page",
+   "where": "possible_duplicates in ingest/underwriter_names.py",
+   "result": "4 pairs flagged: Deutsch, Ze'ev / Deutsch, Zeev; Hirst, Justin / Hurst, Justin; Macdonald, Noelle / Macdonald, Nolle; Stedman, Rob / Stedman, Robert"
+  },
+  {
+   "check": "A filter choice that's now impossible",
+   "looks_at": "A picked line / entity / underwriter that the other filters rule out.",
+   "if_it_fails": "Clears just that choice and says so, instead of showing an empty page.",
+   "kind": "Shows on the page",
+   "where": "drop_stranded_selections in server/filters.py",
+   "result": "In use"
+  },
+  {
+   "check": "A bad or old link",
+   "looks_at": "Unknown values in the page address (a typo'd year, month 13).",
+   "if_it_fails": "Ignores them and falls back to the defaults, rather than showing a wrong slice.",
+   "kind": "Automatic",
+   "where": "parse_filters in server/filters.py",
+   "result": "Pass"
+  },
+  {
+   "check": "Binds with no DSR row",
+   "looks_at": "RBS bound policies that don't appear in DSR under any status or month.",
+   "if_it_fails": "Says so under B/Q and B/S, gives the rate without them, and flags any underwriter whose B/Q passes 100%.",
+   "kind": "Shows on the page",
+   "where": "metrics/funnel.py binds_not_in_dsr",
+   "result": "169 of 5,034 bound policies (9.0% of premium) have no DSR row at all; B/Q reads 43.8% and would read 42.3% without them"
+  },
+  {
+   "check": "Commission recorded or not",
+   "looks_at": "The share of margin premium with no commission recorded.",
+   "if_it_fails": "Says under UW Margin % what the figure would be over the rows that do record one.",
+   "kind": "Shows on the page",
+   "where": "metrics/quality.py uw_margin_pct_recorded_commission",
+   "result": "11.5% of the margin premium records no commission; margin reads 44.4% and 43.0% over the rows that do record one"
+  },
+  {
+   "check": "Extreme rate changes",
+   "looks_at": "Rows with a rate change beyond \u00b1300%.",
+   "if_it_fails": "Logs a warning naming how many and the largest. They stay in RARC.",
+   "kind": "Warns",
+   "where": "ingest/clean_rbs.py RARC_EXTREME_PCT",
+   "result": "48 rows book-wide are beyond \u00b1300% (largest 2,965%); dropping the in-scope ones moves RARC by about 1.7 points"
+  },
+  {
+   "check": "Comparison year in the data at all",
+   "looks_at": "Whether the prior year has any rows on these filters.",
+   "if_it_fails": "Leaves the comparison blank with a notice, instead of showing a book that collapsed to zero.",
+   "kind": "Shows on the page",
+   "where": "pipeline/build_dashboard_data.py",
+   "result": "Pass"
+  },
+  {
+   "check": "Driver story needs enough deals",
+   "looks_at": "The binds behind both periods of the driver split.",
+   "if_it_fails": "Doesn't split the change at all, and says why.",
+   "kind": "Shows on the page",
+   "where": "drivers_section in server/insights.py",
+   "result": "In use"
+  },
+  {
+   "check": "Charts cover the period",
+   "looks_at": "Whether the selected months are inside the charted window.",
+   "if_it_fails": "Says the period runs past the last complete month, or that there is nothing to chart yet.",
+   "kind": "Shows on the page",
+   "where": "server/panels.py",
+   "result": "In use"
+  },
+  {
+   "section": "AUTOMATIC TESTS (python -m pytest)"
+  },
+  {
+   "check": "Every figure against the raw columns",
+   "looks_at": "Each figure rebuilt from the original DSR / RBS column names with plain pandas, no dashboard code, on two different views - plus every underwriter column for every underwriter and both premium mixes.",
+   "if_it_fails": "The test fails, naming each figure and both values.",
+   "kind": "Test",
+   "where": "tests/test_trace_to_source.py",
+   "result": "Pass - exact match, every figure and every underwriter"
+  },
+  {
+   "check": "Lineage matches the code",
+   "looks_at": "That the lineage (tabs 10-11) names exactly the columns the pipeline reads, both ways, and that every figure on the page has lineage.",
+   "if_it_fails": "The test fails, naming the column or figure.",
+   "kind": "Test",
+   "where": "tests/test_lineage.py",
+   "result": "Pass"
+  },
+  {
+   "check": "Each month matches the page",
+   "looks_at": "A month in the trend charts against the whole-page figure for that month picked on its own.",
+   "if_it_fails": "The test fails.",
+   "kind": "Test",
+   "where": "tests/test_trends_and_page.py",
+   "result": "Pass"
+  },
+  {
+   "check": "Driver split adds up",
+   "looks_at": "That the four drivers multiply back to premium per underwriter and their shares add to the total move.",
+   "if_it_fails": "The test fails.",
+   "kind": "Test",
+   "where": "tests/test_insights.py",
+   "result": "Pass"
+  },
+  {
+   "check": "The rules in tab 3",
+   "looks_at": "New/Renewal following RBS, entity spellings, name tidy-up, scope filters, and that RBS always wins a reconciliation.",
+   "if_it_fails": "The test fails.",
+   "kind": "Test",
+   "where": "tests/test_alignment.py, tests/test_reconcile.py, tests/test_scope.py",
+   "result": "Pass"
+  },
+  {
+   "check": "Every metric by hand",
+   "looks_at": "Each metric against rows small enough to work out with a calculator.",
+   "if_it_fails": "The test fails.",
+   "kind": "Test",
+   "where": "tests/test_quality.py, test_new_metrics.py, test_funnel.py, test_underwriters.py",
+   "result": "Pass"
+  },
+  {
+   "check": "The page renders",
+   "looks_at": "Every kind of view (each period type, submission basis, a picked underwriter, empty filters) and every tab.",
+   "if_it_fails": "The test fails - this catches a figure the page asks for that the pipeline stopped producing.",
+   "kind": "Test",
+   "where": "tests/test_filters.py, tests/test_trends_and_page.py",
+   "result": "Pass"
+  }
+ ],
+ "versus": [
+  {
+   "section": "THE TWO STRUCTURAL DIFFERENCES"
+  },
+  {
+   "figure": "Headline premium",
+   "matt": "Adds up the premium on the DSR policy rows, and applies RBS's margin % to that DSR premium, so his headline stays consistent with the funnel it came from.",
+   "ours": "Adds up the premium on the RBS rows. DSR's bound-row total is worked out too, but only as a cross-check with a red badge.",
+   "same": "Differs",
+   "worth": "9.1% apart on Jan\u2013Aug 2026 - flagged",
+   "which": "RBS. It is the company's source of truth for bound business (tab 3, Rule 7), and the gap is measured and shown rather than hidden. Matt's is internally consistent with his funnel, so his headline figure is our cross-check figure - open question 23.",
+   "where": "metrics/premium.py; reconcile/cross_check.py"
+  },
+  {
+   "figure": "Binds",
+   "matt": "Counts distinct DSR policies whose status marks them bound.",
+   "ours": "Counts distinct policies in RBS. DSR's own count is the cross-check.",
+   "same": "Differs",
+   "worth": "3.4% apart on Jan\u2013Aug 2026 - flagged",
+   "which": "RBS, same reason as premium. Both treat a mid-term cancellation as bound.",
+   "where": "metrics/funnel.py"
+  },
+  {
+   "figure": "Underwriter count (the per-person denominator)",
+   "matt": "Average monthly employed headcount from the HR file, filtered by entity, line, ROLE and TENURE. For one underwriter: the share of the window HR has them employed. Falls back to a producing roster where a slice has no HR figure.",
+   "ours": "No HR file: Active underwriters (won at least one deal, from RBS) and Roster underwriters (at least one submission, from DSR). Both are producer counts.",
+   "same": "Can't compare",
+   "worth": "Not measurable here - we have no HR file to compare against.",
+   "which": "Ours is the only honest option without HR, and every figure built on it is labelled a stand-in (tab 1, point 5). Matt's is true employed headcount and is better wherever HR exists. His own note warns his default New + Open Market slice divides 56% of the premium by 100% of the heads ($2.09M per head, against $3.72M on all business).",
+   "where": "metrics/headcount.py"
+  },
+  {
+   "section": "SAME DEFINITION - FIGURES SHOULD LINE UP (once the premium base above is allowed for)"
+  },
+  {
+   "figure": "UW Margin %",
+   "matt": "Margin premium \u00f7 premium carrying a GELR; equals 1 \u2212 margin GELR \u2212 margin commission exactly.",
+   "ours": "100% \u2212 margin GELR \u2212 margin commission, over rows with a usable GELR.",
+   "same": "Agree",
+   "worth": "Same arithmetic.",
+   "which": "Both; neither subtracts Mosaic's internal commission (open question 2).",
+   "where": "metrics/quality.py"
+  },
+  {
+   "figure": "GELR (margin version)",
+   "matt": "His single \"GELR\" figure: premium-weighted over GELR-bearing rows.",
+   "ours": "Our margin version - same population.",
+   "same": "Agree",
+   "worth": "Same, except he also drops 2021 inceptions and we don't (open question 24).",
+   "which": "Both. Ours is named \"margin version\" so it can't be confused with the book version.",
+   "where": "metrics/quality.py"
+  },
+  {
+   "figure": "Commission (book version)",
+   "matt": "His single \"Commission\" figure: premium-weighted over ALL premium, blank counting as no commission.",
+   "ours": "Our book version - same population and same blank rule.",
+   "same": "Agree",
+   "worth": "16.55% ours vs 18.69% over only the rows that carry a commission",
+   "which": "Both.",
+   "where": "metrics/quality.py"
+  },
+  {
+   "figure": "Margin cover / Commission cover",
+   "matt": "Margin premium \u00f7 all premium; and the share of margin premium carrying a commission above zero (his note: 12.2% carries exactly zero).",
+   "ours": "The same two figures, same populations.",
+   "same": "Agree",
+   "worth": "Same arithmetic.",
+   "which": "Both.",
+   "where": "metrics/quality.py"
+  },
+  {
+   "figure": "SCM share",
+   "matt": "1 \u2212 Mosaic 1609's premium \u00f7 all agency premium - a ratio of sums, not an average of percentages.",
+   "ours": "The same.",
+   "same": "Agree",
+   "worth": "Same arithmetic.",
+   "which": "Both.",
+   "where": "metrics/composition.py"
+  },
+  {
+   "figure": "Mosaic as lead / Primary share",
+   "matt": "Share of ROWS (a small deal counts the same as a large one).",
+   "ours": "Share of rows too.",
+   "same": "Agree",
+   "worth": "Row count vs premium-weighted: 52.0% ours (rows) vs 54.1% weighted by premium for primary share.",
+   "which": "Both, with the row-count caveat written next to the figure. Which Slip Lead values count as \"Mosaic\" is still open (question 19).",
+   "where": "metrics/composition.py"
+  },
+  {
+   "figure": "RARC",
+   "matt": "Renewals only whatever the business-type filter says, weighted by expiring premium; every other filter still applies.",
+   "ours": "The same.",
+   "same": "Agree",
+   "worth": "Same arithmetic.",
+   "which": "Both.",
+   "where": "metrics/quality.py"
+  },
+  {
+   "figure": "The funnel and its rates",
+   "matt": "Distinct policies for submissions, quotes and binds; a rate is blank, never zero, when there is nothing to divide by.",
+   "ours": "The same rule.",
+   "same": "Agree",
+   "worth": "Structure agrees; the levels differ because his binds come from DSR (see above).",
+   "which": "Both.",
+   "where": "metrics/funnel.py"
+  },
+  {
+   "figure": "Roster underwriters",
+   "matt": "Distinct producing underwriters across the filtered policy rows, any status - his fallback denominator.",
+   "ours": "Our Roster underwriters - the same definition.",
+   "same": "Agree",
+   "worth": "Same arithmetic.",
+   "which": "Both.",
+   "where": "metrics/headcount.py"
+  },
+  {
+   "figure": "Last 12 months, and the month still in progress",
+   "matt": "Re-indexes every row onto a window ending at the last complete month; the month bar is fixed under that window and the part month is marked.",
+   "ours": "A window of twelve months ending at the last complete month; months with no complete data are shown dashed and a notice warns when a period includes them.",
+   "same": "Agree",
+   "worth": "Same rule, different mechanics.",
+   "which": "Both.",
+   "where": "scope/period.py; server/insights.py"
+  },
+  {
+   "section": "DELIBERATELY DIFFERENT"
+  },
+  {
+   "figure": "Rate Adequacy",
+   "matt": "All the premium in scope \u00f7 a benchmark built only from rows that have one: `adequacy: bn? agwp/bn`.",
+   "ours": "Premium and benchmark restricted to the same rows (usable GELR and a plan loss ratio above 0).",
+   "same": "Differs",
+   "worth": "139.7% ours vs 140.4% Matt-style (all premium over the same benchmark)",
+   "which": "Ours. His numerator includes premium that contributed nothing to the denominator, which overstates it - the workbook flagged this from the start (tab 4). We also show RBS's own benchmark premium as a second opinion.",
+   "where": "metrics/quality.py"
+  },
+  {
+   "figure": "GELR (book version)",
+   "matt": "Doesn't exist - he shows one GELR only.",
+   "ours": "An extra version: premium-weighted across all rows, a blank GELR counting as 0.",
+   "same": "Differs",
+   "worth": "38.80% ours vs 39.01% if blanks were left out",
+   "which": "Both of ours are shown, each clearly named, because tab 4 asks for the \"across all rows\" reading. Whether a blank should count as 0 is open question 1.",
+   "where": "metrics/quality.py"
+  },
+  {
+   "figure": "Average agency share",
+   "matt": "Weights by premium but divides by ALL premium in scope, so a premium-bearing row with no line share recorded drags it down.",
+   "ours": "Uses only the rows that have a line share, on both sides of the division.",
+   "same": "Differs",
+   "worth": "Not directly measurable (we don't hold his figure), but it is the same class of error he fixed elsewhere in his own code for fees and margin.",
+   "which": "Ours. A share can only be averaged over risks that have one.",
+   "where": "metrics/composition.py"
+  },
+  {
+   "figure": "Attachment point (Primary and Excess)",
+   "matt": "One column, Excess + Deductible added together, then split by layer and medianed.",
+   "ours": "Excess only on Excess layers (blanks left out); Deductible only on Primary layers (blank = 0).",
+   "same": "Differs",
+   "worth": "29,274 ours (blank = 0) vs 58,547 if blanks were left out",
+   "which": "Ours keeps the two ideas apart, which is easier to explain. The blank-as-zero rule is the workbook's (tab 4) and halves the Primary figure - worth revisiting.",
+   "where": "metrics/quality.py"
+  },
+  {
+   "figure": "Limit",
+   "matt": "A median of Agency Exposure - but his label says \"Avg limit\" and his own tooltip says \"mean\".",
+   "ours": "The same median, named \"Median limit\" on screen.",
+   "same": "Differs (name only)",
+   "worth": "median 5,854,701 ours vs mean 17,832,668 (what \"Average Limit\" would suggest)",
+   "which": "Ours. Same arithmetic, honest name - a mean would read three times higher.",
+   "where": "metrics/quality.py"
+  },
+  {
+   "figure": "Peer comparison",
+   "matt": "Annualised UW margin per underwriter, against the median of their PRODUCT or line, leaving the person out of their own median, annualised by months employed from HR, with a membership rule that drops thin or out-of-entity names and seeds rows for leavers.",
+   "ours": "Premium against the median premium of everyone in the current filters (the person included), leaving out anyone with no premium. No annualisation.",
+   "same": "Differs",
+   "worth": "Peer median $3.24M ours (zero-premium underwriters left out).",
+   "which": "His is better on every axis he gives a reason for, but most of it needs HR months and a product mapping we don't have. Ours is a stand-in, and the table says so. Open question 10.",
+   "where": "metrics/underwriters.py"
+  },
+  {
+   "figure": "What drove the change",
+   "matt": "The waterfall his page draws allocates each driver's share by Shapley value over every ordering, and carries a fifth margin term. (His code also holds a simpler log-share bridge, which is what ours matches.)",
+   "ours": "Four drivers, each share = its log change \u00f7 the total log change, so the shares add to the total exactly.",
+   "same": "Differs",
+   "worth": "Same four drivers and the same total; the split between them will differ from his screen.",
+   "which": "Ours, for now: it is exact, order-independent and easy to explain. A Shapley split and a margin term are a fair next step.",
+   "where": "metrics/drivers.py"
+  },
+  {
+   "figure": "Too-few-deals treatment",
+   "matt": "Greys out table ratios below his minimums (e.g. 5 deals).",
+   "ours": "Greys out any figure resting on fewer than 20 policies, or per-person figures below 5 underwriters, and tags it. Nothing is ever hidden.",
+   "same": "Differs",
+   "worth": "Same intent, wider coverage.",
+   "which": "Ours - tab 9, question 4.",
+   "where": "server/insights.py"
+  },
+  {
+   "figure": "What the page opens on",
+   "matt": "New business, Open Market - the slice his LOB workbook reconciles to.",
+   "ours": "The whole book.",
+   "same": "Differs",
+   "worth": "His default divides 56% of premium by 100% of heads (his own note).",
+   "which": "Ours, because our denominator follows the filters. One line in config/settings.py to match his - open question 5.",
+   "where": "config/settings.py"
+  },
+  {
+   "figure": "Win rate (B/Q) - can it exceed 100%?",
+   "matt": "No: his binds come from DSR too, so every bind is also a submission and the funnel is nested by construction.",
+   "ours": "It can, on a narrow slice: our binds come from RBS and some bound policies have no DSR row at all. The page flags it and says what the rate would be without them.",
+   "same": "Differs",
+   "worth": "169 of 5,034 bound policies (9.0% of premium) have no DSR row at all; B/Q reads 43.8% and would read 42.3% without them",
+   "which": "Ours keeps RBS as the source of truth for wins, which matters more than a tidy funnel - but this is the strongest argument for his choice. Open question 26.",
+   "where": "metrics/funnel.py"
+  },
+  {
+   "section": "ONLY MATT'S BUILD HAS IT"
+  },
+  {
+   "figure": "Agency Revenue, fee yields, fee streams",
+   "matt": "Total Fees, Syndicate and SCM fees, yields on the fee-bearing premium, and a per-head revenue figure.",
+   "ours": "Not built - the columns don't exist in the standard RBS export (tab 6).",
+   "same": "Can't compare",
+   "worth": "-",
+   "which": "Nothing to follow until the columns exist. His two design points are worth copying then: divide a yield by the premium of the fee-bearing rows only, and split each stream by its own premium.",
+   "where": "tab 6"
+  },
+  {
+   "figure": "Product, Role and Tenure filters",
+   "matt": "A product roster and Lloyd's risk-code mapping; HR role and tenure applied to BOTH the premium and the headcount.",
+   "ours": "Not available (tab 7).",
+   "same": "Can't compare",
+   "worth": "-",
+   "which": "Needs his mapping and the HR file - open questions 6 and 7.",
+   "where": "tab 7"
+  },
+  {
+   "figure": "Narrative and extras",
+   "matt": "UW margin in dollars, index against the line average, a 12-month rolling view, written verdicts per underwriter, prize / sensitivity figures, a CEO three-term test, first-year fallback cards, and a count of names HR can't identify.",
+   "ours": "Not built.",
+   "same": "Can't compare",
+   "worth": "-",
+   "which": "Worth revisiting once the HR file exists; the rolling view is the closest to our Trends tab.",
+   "where": "-"
+  },
+  {
+   "section": "ONLY OURS HAS IT"
+  },
+  {
+   "figure": "DSR against RBS, every time",
+   "matt": "-",
+   "ours": "Bound premium and bind count worked out from both reports on the same filters, with a 2% tolerance, a warning in the log and a red badge you can click.",
+   "same": "Ours only",
+   "worth": "9.1% apart on Jan\u2013Aug 2026 - flagged",
+   "which": "Tab 3, Rule 6.",
+   "where": "reconcile/cross_check.py"
+  },
+  {
+   "figure": "New/Renewal lined up",
+   "matt": "-",
+   "ours": "Where a policy is in both reports and they disagree, DSR takes RBS's Renewal Status.",
+   "same": "Ours only",
+   "worth": "271 DSR policies changed across the whole extract.",
+   "which": "Tab 3, Rule 2.",
+   "where": "ingest/align_reports.py"
+  },
+  {
+   "figure": "Unit and sanity checks on the way in",
+   "matt": "-",
+   "ours": "Percent columns detected as fractions or percent (the run stops if they disagree), a GELR sanity range, warnings when a value can't be read, and a cache keyed on the file itself.",
+   "same": "Ours only",
+   "worth": "See tab 13.",
+   "which": "Tab 13.",
+   "where": "ingest/clean_rbs.py"
+  },
+  {
+   "figure": "Underwriter names tidied, duplicates flagged",
+   "matt": "-",
+   "ours": "Capitals, punctuation and spacing tidied for matching, and likely same-person pairs tagged without merging them.",
+   "same": "Ours only",
+   "worth": "4 pairs flagged: Deutsch, Ze'ev / Deutsch, Zeev; Hirst, Justin / Hurst, Justin; Macdonald, Noelle / Macdonald, Nolle; Stedman, Rob / Stedman, Robert",
+   "which": "Tab 3, Rule 5; open question 8.",
+   "where": "ingest/underwriter_names.py"
+  },
+  {
+   "figure": "Lineage and the raw-column check",
+   "matt": "-",
+   "ours": "Every figure traced to its original columns (tabs 10-11), shown on the page behind an (i), and rebuilt from those raw columns by an automatic check.",
+   "same": "Ours only",
+   "worth": "Pass - exact match, every figure and every underwriter",
+   "which": "Tabs 10, 11 and 13.",
+   "where": "metrics/lineage.py"
+  },
+  {
+   "figure": "Extra metrics",
+   "matt": "-",
+   "ours": "Rate Adequacy double-check (RBS's own benchmark), Broker concentration, Average policy length, Renewal premium growth, New vs. Renewal and Placement mixes, and the Active / Roster underwriter pair.",
+   "same": "Ours only",
+   "worth": "-",
+   "which": "Tab 5 ideas, all built (tab 8).",
+   "where": "metrics/"
+  },
+  {
+   "section": "WORTH KNOWING IF YOU RECONCILE FIGURES WITH HIM"
+  },
+  {
+   "figure": "Matt's own labels disagree with his code in three places",
+   "matt": "Rate adequacy is described three different ways (one tooltip states the reciprocal of what the code does); the limit tile says \"Avg\" and its tooltip says \"mean\" while the code takes a median; an \"active months\" tooltip describes a denominator his peer table only falls back to.",
+   "ours": "Our definitions are generated from one place (metrics/lineage.py) and shown on the page, so the label and the code can't drift apart.",
+   "same": "Differs",
+   "worth": "-",
+   "which": "If a figure of his doesn't match ours, check his label against his code before assuming the data differs.",
+   "where": "tabs 10-11"
+  }
+ ],
+ "filters": [
+  {
+   "section": "PERIOD MENU"
+  },
+  {
+   "filter": "Period",
+   "what": "Which months the figures cover.",
+   "choices": "Quick picks: This year so far / Last 12 months / Full year. A quarter: Q1-Q4. Or tick any months.",
+   "matt": "Partly - YTD / TTM and a month bar",
+   "ours": "Yes (reworked)",
+   "note": "\"This year so far\" = January to the last COMPLETE month (data as at 15 Sep 2026 -> Jan-Aug). \"Last 12 months\" = the twelve months ending with the last complete month (Sep 2025-Aug 2026). Months with no complete data yet are shown dashed. Ticking a month switches to picked months; choosing a quick pick or quarter clears the ticks.",
+   "default": "This year so far",
+   "where": "PERIODS in server/filters.py; Scope in scope/filter.py"
+  },
+  {
+   "filter": "Year",
+   "what": "Which year to look at. Always compared with the year before, same months.",
+   "choices": "Every year in the data up to today (2021-2026)",
+   "matt": "No - fixed at 2026 vs 2025",
+   "ours": "Yes (new)",
+   "note": "In the Period menu. Looking at a past year uses the same months, so 2024 \"This year so far\" is Jan-Aug 2024 vs Jan-Aug 2023.",
+   "default": "Latest year",
+   "where": "Scope.year; scope/period.py prior_year_scope"
+  },
+  {
+   "filter": "Date basis (\"Count a policy in the month of its...\")",
+   "what": "Which date decides the month a policy belongs to.",
+   "choices": "Inception date / Submission date",
+   "matt": "Yes",
+   "ours": "Yes - with a limit",
+   "note": "In the Period menu. Tab 3, Rule 3: RBS has no submission date. On Submission, only DSR-only figures are shown (Submissions, Quotes, Quote rate, Roster underwriters); everything needing RBS is blank with a note, rather than quietly mixing two different months. Matt's build mixes them.",
+   "default": "Inception date",
+   "where": "Scope.date_basis; SUBMISSION_BASIS_NOTE in pipeline/build_dashboard_data.py"
+  },
+  {
+   "section": "WHAT KIND OF BUSINESS"
+  },
+  {
+   "filter": "Business",
+   "what": "New business, renewals, or both. Each choice is explained in the menu.",
+   "choices": "All / New / Renewal",
+   "matt": "Yes",
+   "ours": "Yes",
+   "note": "Follows RBS's Renewal Status where DSR disagrees (tab 3, Rule 2). RARC and Renewal Premium Growth always look at renewals, whatever is picked here. Matt's build opens on New.",
+   "default": "All (Matt: New)",
+   "where": "Scope.business_type; DEFAULT_BUSINESS_TYPE in config/settings.py"
+  },
+  {
+   "filter": "Placement",
+   "what": "How the business reached us. Each choice is explained in the menu.",
+   "choices": "All / Open Market / Facility/DUA / Agreement",
+   "matt": "Yes",
+   "ours": "Yes",
+   "note": "Our data also has Agreement business, which Matt's list doesn't show. Matt's build opens on Open Market because that's what his LOB workbook reconciles to - see tab 9.",
+   "default": "All (Matt: Open Market)",
+   "where": "Scope.placement; DEFAULT_PLACEMENT in config/settings.py"
+  },
+  {
+   "filter": "Line of business",
+   "what": "One class of business, e.g. Cyber.",
+   "choices": "Only what exists with the other filters",
+   "matt": "Yes",
+   "ours": "Yes",
+   "note": "Same values on DSR and RBS (tab 3, Rule 2).",
+   "default": "All lines",
+   "where": "Scope.line_of_business; scope/options.py"
+  },
+  {
+   "filter": "Entity",
+   "what": "One producing entity, e.g. Mosaic UK.",
+   "choices": "Only what exists with the other filters",
+   "matt": "Yes",
+   "ours": "Yes - read the note",
+   "note": "DSR's spellings mapped onto RBS's (\"Mosaic Syndicate 2610\" -> \"Mosaic 2610\"). Our data has 12 entities, including syndicates (1609, 2610, 5399, 5431); Matt's list has 7 office entities, so he may group them - open question in tab 9.",
+   "default": "All entities",
+   "where": "Scope.entity; normalise_entity in config/field_map.py"
+  },
+  {
+   "filter": "Product",
+   "what": "A product within a line, e.g. Cyber Tech, W&I Tax.",
+   "choices": "-",
+   "matt": "Yes",
+   "ours": "No",
+   "note": "Not in DSR or RBS. Matt's build takes it from a product roster and Lloyd's Risk Code mapping we don't have. Listed under \"Not available yet\" with the reason. Needs that mapping - tab 9.",
+   "default": "-",
+   "where": "-"
+  },
+  {
+   "section": "WHO WROTE IT"
+  },
+  {
+   "filter": "Underwriter",
+   "what": "One underwriter. Also: click a name in the Underwriters table.",
+   "choices": "Searchable list - type part of a name",
+   "matt": "Yes",
+   "ours": "Yes - read the note",
+   "note": "Names matched after tidying capitals, punctuation and spaces only (tab 3, Rule 5). Real duplicates seen: \"Stedman, Rob\" / \"Stedman, Robert\", \"Hirst, Justin\" / \"Hurst, Justin\". Picking a name keeps the peer comparison against everyone else in the other filters.",
+   "default": "All underwriters",
+   "where": "Scope.underwriter; ingest/underwriter_names.py"
+  },
+  {
+   "filter": "Role",
+   "what": "Underwriters vs. leadership / UA.",
+   "choices": "-",
+   "matt": "Yes",
+   "ours": "No",
+   "note": "Only in the HR file. Listed under \"Not available yet\".",
+   "default": "-",
+   "where": "HR_AVAILABLE in config/settings.py"
+  },
+  {
+   "filter": "Tenure",
+   "what": "Years at Mosaic: 0-1, 1-2, 2+.",
+   "choices": "-",
+   "matt": "Yes",
+   "ours": "No",
+   "note": "Only in the HR file. Listed under \"Not available yet\". Bands already in TENURE_BANDS.",
+   "default": "-",
+   "where": "TENURE_BANDS in config/settings.py"
+  },
+  {
+   "section": "HOW THE TOOLBAR BEHAVES"
+  },
+  {
+   "filter": "Apply / Cancel",
+   "what": "Choices take effect when you press Apply. Cancel, Esc or clicking away throws away changes you haven't applied.",
+   "choices": "-",
+   "matt": "No - every click reloads",
+   "ours": "Yes (new)",
+   "note": "Each new combination takes 1-2 seconds to work out, so setting three filters used to mean three waits. The page fades while it updates.",
+   "default": "-",
+   "where": "TOOLBAR_SCRIPT in server/dashboard.py"
+  },
+  {
+   "filter": "Only-possible choices",
+   "what": "Each list only offers choices that exist with the other filters, and says how many (e.g. \"162 available with your other filters\").",
+   "choices": "-",
+   "matt": "Yes",
+   "ours": "Yes",
+   "note": "Built from both reports, this period and last year's. If a change makes a picked name impossible, it's cleared and the page says so, instead of showing an empty page.",
+   "default": "-",
+   "where": "scope/options.py; drop_stranded_selections in server/filters.py"
+  },
+  {
+   "filter": "Search in long lists",
+   "what": "Type to narrow a list (Underwriter, and any list over 12 choices).",
+   "choices": "-",
+   "matt": "No",
+   "ours": "Yes (new)",
+   "note": "\"All\" and the current choice always stay visible while searching.",
+   "default": "-",
+   "where": "_list_menu in server/dashboard.py"
+  },
+  {
+   "filter": "Chips and Clear all",
+   "what": "Every filter that's on shows under the toolbar; \u00d7 removes just that one.",
+   "choices": "-",
+   "matt": "No - one Reset button",
+   "ours": "Yes (new)",
+   "note": "Clear all goes back to the defaults in config/settings.py (DEFAULT_...).",
+   "default": "-",
+   "where": "_active_filters in server/dashboard.py"
+  },
+  {
+   "filter": "Shareable address",
+   "what": "The filters are in the page address, e.g. /?period=q2&bt=New&lob=Cyber.",
+   "choices": "-",
+   "matt": "No",
+   "ours": "Yes (new)",
+   "note": "Bookmark or paste a filtered view. A broken or old link falls back to defaults rather than showing wrong numbers.",
+   "default": "-",
+   "where": "FilterState.query in server/filters.py"
+  }
+ ]
+}

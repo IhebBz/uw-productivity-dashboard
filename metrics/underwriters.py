@@ -41,10 +41,12 @@ def underwriter_table(dsr: pd.DataFrame, rbs: pd.DataFrame, scope: Scope,
     Pass rbs=None when the scope is on submission-date basis: RBS has no
     submission date (tab 3, Rule 3), so binds, premium and margin are blank.
 
-    Peer comparison (tab 4): an underwriter's premium / the median premium
-    of everyone else in the table. The peer group is whoever is in the
+    Peer comparison (tab 4): an underwriter's premium / the median premium of
+    the underwriters in the table - themselves included, which keeps the
+    median the same figure for everyone. The peer group is whoever is in the
     current filters. Whether zero-premium underwriters count towards the
     median is PEER_MEDIAN_EXCLUDES_ZERO_PREMIUM in config/settings.py.
+    Matt's build uses a stricter comparison (workbook tab 12).
     """
     display_names = display_names or {}
     dsr_s = apply_scope(dsr, scope).dropna(subset=["underwriter"])

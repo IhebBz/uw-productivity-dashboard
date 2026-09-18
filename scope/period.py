@@ -1,7 +1,6 @@
 """Everything about time windows: how old the data is, which month is the
 last complete one, the matching prior-year window, and a plain-English label
-for any window. See the metrics workbook, tab 7 ("Timeframe", "Months",
-"Year").
+for any window. See the metrics workbook, tab 7 ("Period", "Year").
 """
 import calendar
 import dataclasses

@@ -69,24 +69,35 @@ FORMATTERS = {
 }
 
 
+def change_value(current, prior, kind: str):
+    """The move from the prior period as a number, rounded as displayed: (value, unit).
+
+    Percentages and 0-1 ratios move in percentage points (" pts"); money,
+    counts and lengths move in percent ("%"). (None, unit) when there's
+    nothing to compare.
+    """
+    unit = " pts" if kind in ("pct", "ratio") else "%"
+    if current is None or prior is None:
+        return None, unit
+    if kind in ("pct", "ratio"):
+        return round((current - prior) * (100 if kind == "ratio" else 1), 1), unit
+    if not prior:
+        return None, unit
+    return round((current / prior - 1) * 100, 1), unit
+
+
 def fmt_change(current, prior, kind: str) -> tuple:
     """The move from the prior period, as (text, direction of the move).
 
-    Percentages and 0-1 ratios move in percentage points ("+1.2 pts");
-    money, counts and lengths move in percent ("+4.2%"). Direction is
-    "up", "down" or "flat", or None when there's nothing to compare.
+    Direction is "up", "down" or "flat", or None when there's nothing to
+    compare. Text carries an arrow (▲ / ▼) as well as a sign, so the
+    direction never depends on colour alone. A move that rounds to nothing
+    reads "0.0" rather than "-0.0".
     """
-    if current is None or prior is None:
-        return "\u2014", None
-    if kind in ("pct", "ratio"):
-        points = (current - prior) * (100 if kind == "ratio" else 1)
-        text = f"{points:+.1f} pts"
-        move = points
-    else:
-        if not prior:
-            return "\u2014", None
-        move = current / prior - 1
-        text = f"{move * 100:+.1f}%"
-    if round(move, 6) == 0:
-        return text, "flat"
-    return text, "up" if move > 0 else "down"
+    shown, unit = change_value(current, prior, kind)
+    if shown is None:
+        return "—", None
+    if shown == 0:
+        return f"0.0{unit}", "flat"
+    arrow = "▲" if shown > 0 else "▼"
+    return f"{arrow} {shown:+.1f}{unit}", "up" if shown > 0 else "down"

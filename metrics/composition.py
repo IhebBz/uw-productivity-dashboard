@@ -68,8 +68,13 @@ def placement_mix(rbs: pd.DataFrame, scope: Scope) -> dict:
 def average_agency_share(rbs: pd.DataFrame, scope: Scope) -> float:
     """Tab 4, "Average Agency Share": premium-weighted Agency Line/Share, in percent units.
 
-    Weighted by premium, as in Matt's build, so a big line on a big risk
-    counts for more than a small line on a small one.
+    Weighted by premium, so a big line on a big risk counts for more than a
+    small line on a small one.
+
+    Deliberately NOT the same as Matt's build: his version divides by ALL
+    premium in scope while only rows with a line share add to the top of the
+    fraction, which understates the share whenever a premium-bearing row has
+    none recorded. Here both sides use the rows that have a line share.
     """
     f = apply_scope(rbs, scope)
     f = f[f["agency_share"].notna()]

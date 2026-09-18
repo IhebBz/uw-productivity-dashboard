@@ -16,7 +16,7 @@ import threading
 import time
 
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
 
 from data_sources.excel_source import ExcelSource
 from pipeline.build_dashboard_data import prepare, compute_with_comparison
@@ -24,6 +24,7 @@ from pipeline.serialize import to_json_safe
 from pipeline.logging_setup import setup_logging
 from scope.options import filter_options, fixed_choices
 from server.dashboard import render_dashboard
+from server.exports import figures_csv, underwriters_csv
 from server.filters import parse_filters, drop_stranded_selections
 
 setup_logging()
@@ -92,6 +93,7 @@ def _view_for(params):
         "choices": choices,
         "as_at": data.as_at,
         "underwriter_names": data.underwriter_names,
+        "possible_duplicates": data.possible_duplicates or {},
         "result": compute_with_comparison(data, state.to_scope(data.as_at)),
     }
     with _lock:
@@ -110,6 +112,28 @@ def get_metrics(request: Request):
         "error": _latest["error"],
         "data": to_json_safe(view["result"]) if view else None,
     }
+
+
+def _csv(view, build, name):
+    """A CSV download named after the data date, e.g. uw-figures-2026-09-15.csv."""
+    if view is None:
+        return Response("The data is still loading - try again in a moment.", status_code=503)
+    filename = f"uw-{name}-{view['as_at']:%Y-%m-%d}.csv"
+    # utf-8-sig so Excel reads the dashes and accents correctly.
+    return Response(build(view).encode("utf-8-sig"), media_type="text/csv",
+                    headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+
+
+@app.get("/export/figures.csv")
+def export_figures(request: Request):
+    """Every figure on the page, for the filters in the address, with its source columns."""
+    return _csv(_view_for(request.query_params), figures_csv, "figures")
+
+
+@app.get("/export/underwriters.csv")
+def export_underwriters(request: Request):
+    """The underwriter table, for the filters in the address."""
+    return _csv(_view_for(request.query_params), underwriters_csv, "underwriters")
 
 
 @app.get("/", response_class=HTMLResponse)

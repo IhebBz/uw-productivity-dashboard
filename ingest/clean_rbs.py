@@ -50,6 +50,10 @@ OPTIONAL_COLUMNS = {
 # GELR of 0.4% or 4000%, both of which have happened from this exact bug.
 GELR_SANITY_RANGE = (5, 95)
 
+# A renewal rate change beyond this (in percent units) isn't a plausible price
+# move and is worth a warning - see the end of clean_rbs().
+RARC_EXTREME_PCT = 300
+
 
 def _percent_columns_to_percent_units(df: pd.DataFrame) -> pd.DataFrame:
     """Detect whether percent columns arrived as fractions (0.35) or already
@@ -176,4 +180,16 @@ def clean_rbs(raw: pd.DataFrame) -> pd.DataFrame:
         else None
     df["expired_premium"] = pd.to_numeric(df[EXPIRED_PREMIUM_COLUMN], errors="coerce") \
         if EXPIRED_PREMIUM_COLUMN in df.columns else None
+
+    # RARC is a premium-weighted average with no cap, so a handful of extreme
+    # rows can set the headline. The unit check above only looks at the MIDDLE
+    # value, so it can't catch them (metrics workbook, tab 9, question 28).
+    if pd.api.types.is_numeric_dtype(df["rarc"]):
+        extreme = df["rarc"].abs() > RARC_EXTREME_PCT
+        if extreme.any():
+            logger.warning(
+                "RBS: %d rows have a Risk Adjusted Rate Change beyond +/-%d%% (largest %.0f%%). They "
+                "are included in RARC as they are - on the real extract, dropping them moves RARC by "
+                "about 1.7 points.",
+                int(extreme.sum()), RARC_EXTREME_PCT, df.loc[extreme, "rarc"].abs().max())
     return df

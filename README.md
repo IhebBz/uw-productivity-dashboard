@@ -63,7 +63,7 @@ problems are logged as warnings, not hidden (see Audit notes below).
 | `reconcile/` | Compares DSR and RBS on the same scope; RBS's figure wins. |
 | `metrics/` | One file per category from the metrics workbook: funnel, premium, quality, composition, headcount, underwriters. |
 | `pipeline/` | Ties everything together: `prepare()` (read and clean, once) and `compute()` (every metric for one set of filters). |
-| `server/` | The dashboard page, its filter bar, and the background refresh. |
+| `server/` | The dashboard: toolbar (`dashboard.py`), tabs and figures (`panels.py`), charts, help cards, reading aids, downloads, and the background refresh (`app.py`). |
 | `tests/` | One test file per module that has real logic worth checking. |
 
 ## Status
@@ -83,16 +83,190 @@ summary.
   his product mapping) and Role / Tenure (need the HR file) - those show
   greyed out with the reason.
 
+- **Tabs 10 and 11 (Metric lineage, Source columns):** every figure traced
+  to the exact raw DSR / RBS column names and rows it uses, what the pipeline
+  does to each column, and every raw column the code reads.
+- **Tab 12 (Ours vs Matt's build):** every figure of ours against his, read
+  off his own dashboard's code, with what each difference is worth on real
+  data. Two differences matter most: **his headline premium comes from DSR
+  where ours comes from RBS**, and **his single GELR figure is our margin
+  version while his single commission figure is our book version** - so
+  like-named columns across the two dashboards mis-match both.
+- **Tab 13 (Checks & safeguards):** every check that runs, whether it stops
+  the run, warns, or tells the reader, and its result on today's data.
+
+Two more documents in `docs/` are for showing the dashboard to other people:
+
+- **`UW_Dashboard_Presentation.docx`** - the pack to present from. What the
+  dashboard is, where the numbers come from, how to read the page, then every
+  metric with its formula, its exact DSR / RBS columns and its current value,
+  the comparison with Matt's build, the open questions, and the checks.
+- **`Metric_definitions.xlsx`** - one sheet, one row per figure: meaning,
+  formula, report, the export columns, what the pipeline does to those columns
+  first, which rows count, the current value, and what to watch out for.
+
+Both are generated from `docs/doc_facts.json`, which is built from the code and
+the workbook, so the three can't drift apart:
+
+    python docs/export_doc_facts.py          # figures, columns, questions, checks -> JSON
+    python docs/build_metric_definitions.py  # the one-sheet definitions file
+    node docs/build_presentation_doc.js ".." # the Word pack (needs: npm install docx)
+
+Two scripts regenerate the workbook, and both are safe to re-run:
+
+    python docs/update_workbook.py        # tabs 7, 8, 9, 12, 13 (+ pointers on 1, 2, 4, 5)
+    python docs/update_lineage_tabs.py    # tabs 10 and 11, from metrics/lineage.py
+
+Tabs 1-6 are the original hand-written spec and are left alone, except that
+a short "Now:" line is added to a tab 4 or 5 note wherever the built figure
+settles something the spec left open (e.g. how blanks are handled), with the
+effect on real data. So the definitions tab can't quietly drift from the code.
+
 Run `python -m pytest` from the project root - the tests cover the tab 3
 rules, every metric, the filters, and that the page renders for every kind
-of view.
+of view. `tests/test_trace_to_source.py` rebuilds every figure straight
+from the raw export columns (no dashboard code) and checks it matches the
+dashboard exactly - every headline figure, both premium mixes, and every
+column of the underwriter table for every underwriter. It runs when the real
+`DSR.xlsx` / `RBS.xlsx` are in `data/`. `tests/test_lineage.py` checks the
+lineage (below) names exactly the columns the pipeline reads and covers every
+figure on the page.
+
+## Lineage: the (i) next to every figure
+
+Every figure on the dashboard, including the underwriter table's columns and
+the premium mixes, has a small (i). Hover, tap or tab to it for a card
+showing:
+
+- what the figure means, how it's worked out, which rows count, and whether
+  it's counted per line, policy or person;
+- **each original DSR / RBS column it uses, by its exact export name**, and
+  what the pipeline does to that column on the way in (e.g. "stored as a
+  fraction, multiplied by 100", "blank counts as $0", "DSR's value replaced
+  by RBS's where they disagree");
+- the original columns your filters use to narrow the rows first;
+- catches worth knowing, where the code lives, and whether the raw-column
+  check covers it.
+
+Click the (i) to pin the card open. Everything in it comes from
+`metrics/lineage.py` - the same source as workbook tabs 10 and 11 - with
+column names taken from `config/field_map.py` and `ingest/` wherever the code
+already names them. The card itself is built in `server/help.py`.
+
+## The page
+
+| Tab | What's on it |
+|---|---|
+| Overview | Headline figures with their last 12 months, the biggest moves against a year earlier, what drove Premium / Active Underwriter |
+| Funnel | Submissions, quotes, binds and the rates between them |
+| Book quality | Bound premium, deal size, GELR, commission, margin, attachment points, limit, pricing |
+| What we write | Lead, primary and agency share, SCM share, brokers, policy length, renewal growth, premium mixes against a year earlier |
+| Productivity | The stand-in underwriter counts and per-person figures |
+| Underwriters | Sortable, searchable table with peer comparison, few-deals greying and possible duplicate names |
+| Trends | 24 months of premium, binds, submissions, Q/S, B/Q and UW Margin %, your period in orange |
+
+The open tab is in the address (`#trends`), so a link or a reload keeps it.
+Next to the tabs: **Copy link**, **Download figures (CSV)** - every figure,
+this period and a year earlier, with the report and original columns it
+comes from - and **Print** (prints every tab). The Underwriters tab has its
+own **Download table (CSV)**. Downloads are served at `/export/figures.csv`
+and `/export/underwriters.csv` with the same parameters as the page.
+
+Every change carries ▲ / ▼ as well as colour, and every chart has a
+**Show as table** view, so nothing depends on colour or hovering alone.
+
+| Piece | Where |
+|---|---|
+| What's on each tab, headline figures, movers, mixes, underwriter table | `server/panels.py` |
+| Month-by-month figures (same definitions as the page, checked month by month) | `metrics/trends.py` |
+| Sparklines and trend charts | `server/charts.py` |
+| CSV downloads | `server/exports.py` |
+| Possible duplicate names | `possible_duplicates` in `ingest/underwriter_names.py` |
+
+## What the September 2026 audit changed
+
+The calculations were audited line by line against the real extracts, and
+Matt's own dashboard code was read against ours. Tab 9 of the workbook holds
+the questions this raised (17 open), tab 12 the comparison with his build.
+The fixes:
+
+- **B/Q and B/S are overstated, and the page now says so.** They divide RBS
+  binds by DSR quotes, but 169 of 5,034 bound policies (9.0% of premium) have
+  no DSR row at all, so the funnel isn't nested. The note under each figure
+  gives the rate without them, any underwriter whose B/Q passes 100% is
+  flagged, and the red-badge card now points out that those policies explain
+  most of the DSR/RBS premium gap. `metrics/funnel.py binds_not_in_dsr`.
+- **UW Margin % reads high, and by how much.** A blank or zero commission
+  counts as "none charged" while a blank or zero GELR is left out as
+  unusable, so the two halves of `100 - GELR - Commission` treat a missing
+  value in opposite ways. 11.5% of margin premium records no commission;
+  over the rows that do, margin reads 43.0% against 44.4%.
+  `quality.uw_margin_pct_recorded_commission`.
+- **"Less business coming in" was the wrong story.** The driver panel called
+  a fall in submissions-per-underwriter a fall in inbound flow, when
+  submissions had risen 11.9% and the stand-in head count 23.9%. It now
+  names both. `metrics/drivers.py _flow_meaning`.
+- **A comparison year the extract doesn't cover** read as a book that
+  collapsed to $0 (2021 against 2020). It's now blank, with a notice.
+- **The driver split is no longer shown** for a period resting on too few
+  deals (Q4 2026 printed "fell 89.1%" off 12 binds).
+- **The trend charts** say when the period runs past the last complete month,
+  instead of quietly charting none of the selected months.
+- **Extreme rate changes** are warned about on load (48 rows beyond ±300%,
+  largest 2,965%; dropping the in-scope ones moves RARC by ~1.7 points).
+
+Still open in the workbook rather than changed here, because each is a
+business decision: whether to restrict B/Q to binds DSR knows about
+(question 26), whether a missing commission should be left out of the margin
+(25), that entity is per line in RBS but per policy in DSR so entity slices
+don't add up to the total (27), and the extreme rate changes (28).
+
+## Reading aids
+
+Built in `server/insights.py` (and `metrics/drivers.py`), so the page helps
+people read the figures rather than just show them:
+
+- **What drove Premium / Active Underwriter** - the year-on-year change split
+  into submissions per underwriter, quote rate, win rate and average deal
+  size, which multiply back to it exactly; each driver's share of the move
+  adds up to the total. One sentence names the biggest drag and lift.
+- **Red "vs DSR" badges explain themselves** - click for RBS's and DSR's
+  figures side by side, the gap, and what it means.
+- **How to read this page** - columns, colours, pts vs %, the marks.
+- **Few-deals flags** - a figure resting on fewer than `SMALL_SAMPLE_MIN`
+  policies (or, per person, `SMALL_TEAM_MIN` underwriters) is greyed out with
+  a "few binds" style tag; nothing is hidden. Both live in
+  `config/settings.py`.
+- **Incomplete months** - a notice when the period includes months with no
+  complete data yet (e.g. Full year in September), which would make this
+  year look low against last.
+- **Low margin cover** - a note on UW Margin % when under `LOW_MARGIN_COVER`
+  of premium has a usable GELR.
+
+**When you change how a column or metric is handled:** change the code, then
+`metrics/lineage.py`, then run `python docs/update_lineage_tabs.py`. The
+tests fail if the lineage and the pipeline disagree about which columns are
+read, or if a figure on the page has no lineage.
 
 ## Dashboard filters
 
-The filter bar mirrors Matt's build (workbook tab 7 has the full comparison):
-Timeframe (YTD / TTM), Year, Months, Business, Placement, Date basis, Line of
-business, Entity and Underwriter. Every figure is shown next to the same
-period one year earlier, with the change.
+The filters sit in one toolbar across the top of the page: Period, Business,
+Placement, Line of business, Entity and Underwriter. Each button shows its
+current choice (outlined in orange when it's not the default) and opens a
+small menu:
+
+- **Period** - quick picks (This year so far, Last 12 months, Full year), a
+  quarter, or any months; the year; and whether a policy counts in the month
+  of its inception or submission date.
+- **Business / Placement** - each choice explained in a line.
+- **Line of business / Entity / Underwriter** - only the choices that exist
+  with the other filters, with a search box on long lists.
+
+Nothing changes until **Apply** (Cancel, Esc or clicking away discards), so
+several filters cost one reload. Every filter that's on shows under the
+toolbar as a chip whose × removes just that filter; **Clear all** goes back
+to the defaults. Every figure is shown next to the same period one year
+earlier, with the change. Workbook tab 7 compares each filter with Matt's.
 
 How it's built:
 
@@ -100,12 +274,13 @@ How it's built:
 |---|---|
 | One filter definition, applied to both reports | `Scope` and `apply_scope` in `scope/filter.py` |
 | Time windows, last complete month, prior year, labels | `scope/period.py` |
-| Dropdowns that only offer what's still possible | `scope/options.py` |
-| Page address <-> filter choices, defaults, clearing a stranded choice | `server/filters.py` |
+| Lists that only offer what's still possible | `scope/options.py` |
+| Page address <-> filter choices, period choices, defaults, clearing a stranded choice | `server/filters.py` |
 | What the page opens on | `DEFAULT_...` in `config/settings.py` |
+| The toolbar, its menus, chips and behaviour | `_toolbar`, `_active_filters`, `TOOLBAR_SCRIPT` in `server/dashboard.py` |
 | Every figure on the page, its label and note | `SECTIONS` in `server/dashboard.py` |
 
-Filters live in the page address (e.g. `/?tf=ttm&bt=New&lob=Cyber`), so a
+Filters live in the page address (e.g. `/?period=q2&bt=New&lob=Cyber`), so a
 view can be bookmarked or shared. `/metrics` takes the same parameters and
 returns JSON.
 
@@ -122,7 +297,9 @@ on the full extract, and a repeat is instant.
 
 **To add a metric:** write it in `metrics/` with a test, add it to
 `compute()` in `pipeline/build_dashboard_data.py`, add one line to
-`SECTIONS` in `server/dashboard.py`, then add a row to workbook tab 8.
+`SECTIONS` in `server/dashboard.py`, add its lineage to `metrics/lineage.py`
+(and to `tests/test_trace_to_source.py`), run
+`python docs/update_lineage_tabs.py`, then add a row to workbook tab 8.
 
 ## Verified against a real full extract
 

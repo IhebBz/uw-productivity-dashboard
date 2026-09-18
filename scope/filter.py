@@ -93,6 +93,23 @@ def _month_indexes(df: pd.DataFrame, date_column: str) -> pd.Series:
     return _month_index(df[date_column].dt.year, df[date_column].dt.month)
 
 
+def month_number(year: int, month: int) -> int:
+    """One running number per calendar month (Jan 2026 and Dec 2025 are 1 apart)."""
+    return _month_index(year, month)
+
+
+def month_numbers(df: pd.DataFrame, date_basis: str = INCEPTION) -> pd.Series:
+    """Each row's month number on a date basis - for splitting figures by month.
+
+    Same rule as apply_scope: RBS has no submission date, so asking for it
+    raises rather than quietly using another date (tab 3, Rule 3).
+    """
+    date_column = "submission_date" if date_basis == SUBMISSION else "inception_date"
+    if date_column not in df.columns:
+        raise ValueError(f"This report has no '{date_column}' column (metrics workbook, tab 3, Rule 3).")
+    return _month_indexes(df, date_column)
+
+
 def _equals(df: pd.DataFrame, column: str, value) -> pd.Series:
     """Rows where a text column equals value, using the fast copy if there is one."""
     stored = _fast_column(column)

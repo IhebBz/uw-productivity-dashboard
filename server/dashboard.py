@@ -1,18 +1,23 @@
-"""Renders the computed metrics as the dashboard page, in the Mosaic
-palette and number formatting from Mosaic_Dashboard_Standards.docx (section
-6). Server-rendered on every request for the filters in the page address -
-no client-side templating needed for something this size.
+"""Builds the dashboard page: the header, the filter toolbar and its menus,
+the help cards and the scripts, in the Mosaic palette and number formatting
+from Mosaic_Dashboard_Standards.docx (section 6). Server-rendered on every
+request for the filters in the page address - no client-side templating
+needed for something this size.
 
-The page has three parts: the filter bar (see server/filters.py and the
-metrics workbook, tab 7), every figure against the same period last year
-(SECTIONS below), and the underwriter table.
+Everything below the toolbar - the figures (SECTIONS, HERO), tabs, charts
+and the underwriter table - lives in server/panels.py.
 """
+import dataclasses
 from html import escape
 
-from scope.filter import SUBMISSION
-from scope.period import MONTH_NAMES, last_complete_month
-from server.formatting import (FORMATTERS, fmt_change, fmt_money, fmt_pct, fmt_int,
-                               fmt_ratio_pct, fmt_multiple)
+from scope.filter import INCEPTION, SUBMISSION
+from scope.period import MONTH_NAMES, describe_period, last_complete_month
+from server.charts import CHARTS_CSS, CHARTS_SCRIPT
+from server.filters import PERIOD_NAMES, default_state
+from server.help import HELP_CSS, HELP_SCRIPT, help_templates
+from server.insights import GUIDE_CARD, INSIGHTS_CSS, reconciliation_cards
+from server.panels import HERO, PANELS_CSS, PANELS_SCRIPT, SECTIONS, UNDERWRITER_COLUMNS  # noqa: F401
+from server.panels import body as panel_body, page_title
 
 CSS = """
 :root {
@@ -53,7 +58,7 @@ header .meta {
 main {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 48px 40px 80px;
+  padding: 28px 40px 80px;
 }
 .hero {
   display: flex;
@@ -116,8 +121,8 @@ section .subtitle {
   color: #FFFFFF;
   vertical-align: middle;
 }
-.flag.bad { background: var(--bad); }
-.flag.ok { background: var(--good); }
+.flag.bad { background: var(--bad); color: #FFFFFF; }
+.flag.ok { background: var(--good); color: #FFFFFF; }
 .mix-bar {
   height: 8px;
   border-radius: 4px;
@@ -152,67 +157,243 @@ section .subtitle {
   color: var(--charcoal);
   margin-bottom: 8px;
 }
-.filters {
-  background: #F4F5F6;
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: #FFFFFF;
   border-bottom: 1px solid #E4E7E9;
-  padding: 16px 40px;
+  box-shadow: 0 1px 3px rgba(49, 62, 72, 0.06);
+  padding: 10px 40px;
 }
-.filters form {
-  max-width: 1120px;
+.toolbar form {
+  max-width: 1040px;
   margin: 0 auto;
   display: flex;
   flex-wrap: wrap;
-  gap: 14px 22px;
-  align-items: flex-end;
+  gap: 8px;
 }
-.fg label.title {
-  display: block;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--grey);
-  margin-bottom: 5px;
-}
-.fg .count { font-weight: normal; margin-left: 5px; color: #A9B0B6; }
-.pills { display: flex; }
-.pills label {
-  border: 1px solid #C9CFD4;
-  background: #FFFFFF;
-  padding: 4px 10px;
-  font-size: 13px;
+details.menu { position: relative; }
+details.menu > summary {
+  list-style: none;
   cursor: pointer;
-  margin-left: -1px;
-  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+  max-width: 260px;
+  padding: 6px 30px 6px 12px;
+  border: 1px solid #C9CFD4;
+  border-radius: 8px;
+  background: #FFFFFF;
+  position: relative;
+  line-height: 1.25;
+  user-select: none;
 }
-.pills label:first-child { border-radius: 4px 0 0 4px; margin-left: 0; }
-.pills label:last-child { border-radius: 0 4px 4px 0; }
-.pills label.on { background: var(--charcoal); border-color: var(--charcoal); color: #FFFFFF; }
-.pills label.off { cursor: default; opacity: 0.55; }
-.pills input { display: none; }
-.months label { padding: 4px 0; width: 28px; text-align: center; position: relative; }
-.months label.dev::after {
+details.menu > summary::-webkit-details-marker { display: none; }
+details.menu > summary::after {
   content: "";
   position: absolute;
-  top: 3px;
-  right: 3px;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--orange);
+  right: 12px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin-top: -5px;
+  border-right: 1.5px solid var(--grey);
+  border-bottom: 1.5px solid var(--grey);
+  transform: rotate(45deg);
 }
-.fg select {
-  font: inherit;
-  font-size: 13px;
-  padding: 4px 6px;
-  border: 1px solid #C9CFD4;
-  border-radius: 4px;
+details.menu[open] > summary::after { transform: rotate(225deg); margin-top: -1px; }
+details.menu > summary:hover { border-color: var(--grey); }
+details.menu > summary:focus-visible { outline: 2px solid var(--turquoise); outline-offset: 2px; }
+details.menu[open] > summary { border-color: var(--charcoal); }
+details.menu.changed > summary { border-color: var(--orange); background: #FFF7F2; }
+.menu-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+.menu-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--charcoal);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 320px;
+  max-height: min(70vh, 560px);
+  overflow: auto;
   background: #FFFFFF;
-  max-width: 210px;
+  border: 1px solid #E4E7E9;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(49, 62, 72, 0.16);
+  padding: 14px 14px 0;
 }
-.fg select:disabled { color: #A9B0B6; background: #F4F5F6; }
-.reset { font-size: 13px; color: var(--orange); text-decoration: none; padding: 5px 0; }
-.scope-line { color: var(--grey); font-size: 13px; margin-bottom: 28px; }
+.panel-title {
+  font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+  font-size: 17px;
+  margin-bottom: 4px;
+}
+.panel-note { color: var(--grey); font-size: 12.5px; margin: 2px 0 10px; }
+.panel-search {
+  width: 100%;
+  font: inherit;
+  font-size: 14px;
+  padding: 7px 10px;
+  border: 1px solid #C9CFD4;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+.panel-search:focus { outline: 2px solid var(--turquoise); border-color: transparent; }
+.choices { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; }
+.choice {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 7px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.choice:hover { background: #F4F5F6; }
+.choice[hidden] { display: none; }
+.choice input { margin-top: 3px; accent-color: var(--orange); }
+.choice b { display: block; font-weight: 600; font-size: 14px; }
+.choice small { display: block; color: var(--grey); font-size: 12.5px; line-height: 1.35; }
+.group-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--grey);
+  margin: 10px 0 6px 8px;
+}
+.panel.wide { width: 440px; }
+.panel.flip { left: auto; right: 0; }
+.panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.panel-head .panel-title { margin: 0; }
+.year-field { font-size: 13px; font-weight: 600; color: var(--grey); }
+.year-field select {
+  font: inherit;
+  font-size: 14px;
+  color: var(--charcoal);
+  margin-left: 6px;
+  padding: 3px 6px;
+  border: 1px solid #C9CFD4;
+  border-radius: 6px;
+}
+.pill-grid { display: grid; gap: 6px; margin-bottom: 4px; }
+.pill-grid.two { grid-template-columns: repeat(2, 1fr); }
+.pill-grid.three { grid-template-columns: repeat(3, 1fr); }
+.pill-grid.four { grid-template-columns: repeat(4, 1fr); }
+.pill-grid.six { grid-template-columns: repeat(6, 1fr); }
+.pill { cursor: pointer; position: relative; }
+.pill input { position: absolute; opacity: 0; pointer-events: none; }
+.pill span {
+  display: block;
+  height: 100%;
+  text-align: center;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 6px 4px;
+  border: 1px solid #C9CFD4;
+  border-radius: 6px;
+  line-height: 1.3;
+}
+.pill small { display: block; font-size: 11.5px; font-weight: normal; color: var(--grey); }
+.pill:hover span { border-color: var(--grey); background: #F9FAFA; }
+.pill input:checked + span { background: var(--charcoal); border-color: var(--charcoal); color: #FFFFFF; }
+.pill input:checked + span small { color: #D5DADE; }
+.pill input:focus-visible + span { outline: 2px solid var(--turquoise); outline-offset: 1px; }
+.pill.soon span { color: #A9B0B6; border-style: dashed; font-weight: normal; }
+.panel .group-label { margin-left: 0; }
+.panel .panel-note { margin-top: 10px; }
+.panel-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  background: #FFFFFF;
+  border-top: 1px solid #E4E7E9;
+  margin: 8px -14px 0;
+  padding: 10px 14px;
+}
+.btn {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 7px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.btn.primary { background: var(--orange); color: #FFFFFF; }
+.btn.primary:hover { background: #E65100; }
+.btn.quiet { background: #FFFFFF; color: var(--charcoal); border-color: #C9CFD4; }
+.btn:focus-visible { outline: 2px solid var(--turquoise); outline-offset: 2px; }
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px 24px;
+  margin-bottom: 28px;
+  font-size: 13.5px;
+}
+.chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.chips .lead { color: var(--grey); margin-right: 4px; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px 3px 11px;
+  border-radius: 999px;
+  background: #FFF1E8;
+  border: 1px solid #FFD2B8;
+  color: var(--charcoal);
+  text-decoration: none;
+  font-weight: 600;
+}
+.chip .x {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  color: var(--grey);
+  font-size: 15px;
+  line-height: 1;
+}
+.chip:hover .x { background: var(--orange); color: #FFFFFF; }
+.clear { color: var(--orange); margin-left: 6px; font-weight: 600; text-decoration: none; }
+.clear:hover { text-decoration: underline; }
+.context { color: var(--grey); display: flex; gap: 18px; flex-wrap: wrap; }
+.unavailable { border-bottom: 1px dotted #A9B0B6; cursor: help; }
+body.loading main { opacity: 0.35; transition: opacity 0.15s; pointer-events: none; }
+body.loading .toolbar::after {
+  content: "Updating figures\2026";
+  position: absolute;
+  right: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: var(--grey);
+}
+@media (max-width: 700px) {
+  .toolbar { padding: 8px 16px; }
+  .panel.wide { width: auto; }
+  .pill-grid.six { grid-template-columns: repeat(4, 1fr); }
+  details.menu { flex: 1 1 calc(50% - 8px); position: static; }
+  details.menu > summary { max-width: none; min-width: 0; }
+  .toolbar form { position: relative; }
+  .panel { left: 0; right: 0; width: auto; }
+}
 .notice {
   border-left: 3px solid var(--orange);
   background: #FFF4EE;
@@ -222,6 +403,10 @@ section .subtitle {
 }
 .hero .stat .change { font-size: 13px; margin-top: 2px; }
 table.figures, table.uw { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+/* Fixed column widths so every section's columns line up down the page. */
+table.figures { table-layout: fixed; }
+table.figures th:nth-child(1) { width: 49%; }
+table.figures th:nth-child(n+2) { width: 17%; }
 table.figures th, table.uw th {
   text-align: right;
   font-size: 11px;
@@ -258,7 +443,7 @@ table.uw thead th { position: sticky; top: 0; background: #FFFFFF; }
 table.uw a { color: var(--charcoal); text-decoration: none; border-bottom: 1px dotted #A9B0B6; }
 table.uw tr.picked td { background: #FFF4EE; }
 @media (max-width: 700px) {
-  header, .filters { padding-left: 16px; padding-right: 16px; }
+  header { padding-left: 16px; padding-right: 16px; }
   main { padding: 28px 16px 60px; }
   .hero { gap: 28px; }
   table.figures td.was, table.figures th:nth-child(3) { display: none; }
@@ -271,342 +456,232 @@ footer {
 }
 """
 
-MIX_COLORS = ["#FF5A00", "#4DBCC6", "#485CC7", "#BB29BB", "#5C6670"]
-
-# Every figure on the page, in order: (result key, label, format, which way is
-# good, note). "Which way is good" colours the change against last year:
-# "higher", "lower", or "neutral" (a description of the book, not a score).
-# To add a metric to the page, compute it in pipeline/build_dashboard_data.py
-# and add one line here - then list it in the metrics workbook, tab 8.
-SECTIONS = [
-    ("The funnel", "From DSR – every risk that came in, won or not. Binds come from RBS.", [
-        ("funnel.submissions", "Submissions", "int", "higher", None),
-        ("funnel.quotes", "Quotes", "int", "higher", None),
-        ("funnel.binds", "Binds", "int", "higher", "RBS, cross-checked against DSR"),
-        ("funnel.quote_rate", "Quote rate (Q/S)", "ratio", "higher", None),
-        ("funnel.bind_rate", "Win rate (B/Q)", "ratio", "higher", "Binds (RBS) ÷ Quotes (DSR)"),
-        ("funnel.end_to_end_win_rate", "End-to-end win rate (B/S)", "ratio", "higher", None),
-    ]),
-    ("How much we wrote", "From RBS, the source of truth for bound business", [
-        ("premium.bound_premium", "Bound Premium", "money", "higher", "RBS, cross-checked against DSR"),
-        ("premium.average_deal_size", "Average Deal Size", "amount", "higher", "Bound Premium ÷ Binds"),
-    ]),
-    ("How good the business is",
-     "From RBS. Book version = every row; margin version = only rows with a usable GELR", [
-        ("quality.uw_margin_pct", "UW Margin %", "pct", "higher",
-         "Margin versions of GELR and Commission. Mosaic's internal commission is not "
-         "subtracted (open question)"),
-        ("quality.gelr_book_basis", "GELR – book version", "pct", "lower", "Blank GELR counts as 0"),
-        ("quality.gelr_margin_basis", "GELR – margin version", "pct", "lower", None),
-        ("quality.commission_book_basis", "Commission – book version", "pct", "lower", None),
-        ("quality.commission_margin_basis", "Commission – margin version", "pct", "lower", None),
-        ("quality.margin_cover", "Margin cover", "ratio", "higher", "Share of premium with a usable GELR"),
-        ("quality.commission_cover", "Commission cover", "ratio", "neutral",
-         "Share of margin premium with commission above 0"),
-        ("quality.attachment_point_excess", "Median attachment point – Excess", "amount", "neutral", None),
-        ("quality.attachment_point_primary", "Median attachment point – Primary", "amount", "neutral",
-         "Blank deductible counts as 0, so often understated"),
-        ("quality.median_limit", "Median limit", "amount", "neutral",
-         "Agency Exposure (USD). Matt's build calls this “Average”"),
-    ]),
-    ("Pricing", "From RBS", [
-        ("pricing.rate_adequacy", "Rate Adequacy", "pct", "higher",
-         "Premium ÷ plan benchmark, same rows on both sides"),
-        ("pricing.rate_adequacy_rbs_benchmark", "Rate Adequacy – RBS benchmark check", "pct", "higher",
-         "Mosaic 1609 premium ÷ RBS's own 1609 benchmark premium"),
-        ("pricing.rarc", "RARC", "pct", "higher", "Renewals only, whatever the Business filter"),
-    ]),
-    ("What kind of book we write", "From RBS", [
-        ("composition.mosaic_as_lead", "Mosaic as lead", "ratio", "neutral", "Share of rows, not premium"),
-        ("composition.primary_share", "Primary share", "ratio", "neutral", "Share of rows, not premium"),
-        ("composition.average_agency_share", "Average agency share", "pct", "neutral",
-         "Premium-weighted line size"),
-        ("composition.scm_share", "SCM share", "ratio", "neutral",
-         "Premium on third-party capital, not Mosaic 1609"),
-        ("composition.broker_concentration", "Broker concentration", "ratio", "neutral",
-         "Top 5 brokers' share of premium"),
-        ("composition.average_policy_length", "Average policy length", "months", "neutral",
-         "Counted once per policy"),
-        ("composition.renewal_premium_growth", "Renewal premium growth", "ratio", "higher",
-         "Renewal premium ÷ expiring premium. Not a true retention rate"),
-    ]),
-    ("Productivity (stand-in headcount)", None, [
-        ("productivity_stand_in.active_underwriters_stand_in", "Active underwriters (stand-in)", "int",
-         "neutral", "Won at least one deal"),
-        ("productivity_stand_in.roster_underwriters_stand_in", "Roster underwriters (stand-in)", "int",
-         "neutral", "At least one submission"),
-        ("productivity_stand_in.premium_per_active_underwriter", "Premium / Active Underwriter", "money",
-         "higher", "Recommended default"),
-        ("productivity_stand_in.premium_per_roster_underwriter", "Premium / Roster Underwriter", "money",
-         "higher", "Wider view"),
-        ("productivity_stand_in.uw_margin_per_active_underwriter", "UW Margin / Active Underwriter",
-         "money", "higher", None),
-    ]),
-]
-
-HERO = [
-    ("premium.bound_premium", "Bound Premium", "money", "higher", "premium.reconciliation"),
-    ("quality.uw_margin_pct", "UW Margin %", "pct", "higher", None),
-    ("funnel.binds", "Binds", "int", "higher", "funnel.binds_reconciliation"),
-    ("productivity_stand_in.premium_per_active_underwriter", "Premium / Active UW (stand-in)", "money",
-     "higher", None),
-]
+# What each business-type and placement choice means, shown under it in the menu.
+BUSINESS_HINTS = {
+    "": "New and renewal business together",
+    "New": "A brand-new client relationship",
+    "Renewal": "A repeat of last year's policy (RBS's Renewal Status)",
+}
+PLACEMENT_HINTS = {
+    "": "Every way business reaches us",
+    "Open Market": "Brokered case by case",
+    "Facility/DUA": "Pre-agreed delegated authority",
+    "Agreement": "Written under an agreement",
+}
+# Menus with more choices than this get a search box.
+SEARCH_FROM = 12
 
 
-def _get(result: dict, path: str):
-    """Read "section.key" from a result dict; None if either level is missing."""
-    if result is None:
-        return None
-    section, key = path.split(".")
-    return (result.get(section) or {}).get(key)
+def _choice(name, value, title, hint="", checked=False, extra_class="") -> str:
+    """One radio option in a menu: a bold title with an optional grey hint under it."""
+    hint_html = f'<small>{escape(hint)}</small>' if hint else ""
+    return (f'<label class="choice {extra_class}"><input type="radio" name="{name}" '
+            f'value="{escape(str(value))}"{" checked" if checked else ""}>'
+            f'<span><b>{escape(str(title))}</b>{hint_html}</span></label>')
 
 
-def _field(obj, name):
-    """Read a field from a dataclass or a dict (results can be either)."""
-    if obj is None:
-        return None
-    return obj.get(name) if isinstance(obj, dict) else getattr(obj, name, None)
+def _menu(label, value_text, panel, changed, wide=False) -> str:
+    """A toolbar button showing its current value, opening a panel with Cancel / Apply.
 
-
-def _reconciliation_flag(recon) -> str:
-    """A small badge next to a figure that's been cross-checked - only
-    shown when it's actually flagged, since a badge on every row would
-    just be noise (per the design principle of not decorating everything).
+    changed marks a filter that's not on its default, so it stands out.
     """
-    if not recon:
-        return ""
-    if _field(recon, "is_undefined_gap"):
-        return '<span class="flag bad">check vs DSR</span>'
-    if _field(recon, "flagged"):
-        gap = _field(recon, "gap_pct") or 0
-        return f'<span class="flag bad">{gap * 100:.0f}% vs DSR</span>'
-    return ""
-
-
-def _change_html(current, prior, kind, good) -> str:
-    """The move against last year, coloured by whether it's good news."""
-    text, move = fmt_change(current, prior, kind)
-    if move in (None, "flat") or good == "neutral":
-        css = "neutral"
-    else:
-        css = "good" if (move == "up") == (good == "higher") else "bad"
-    return f'<span class="{css}">{text}</span>'
-
-
-def _mix_bar(mix: dict) -> str:
-    """A thin horizontal proportion bar for a premium mix dict."""
-    if not mix:
-        return ""
-    items = []
-    for label, val in mix.items():
-        share = val.get("premium_share") if isinstance(val, dict) else val
-        if share:
-            items.append((label, share))
-    if not items:
-        return ""
-    bar = "".join(
-        f'<span style="width:{share * 100:.2f}%;background:{MIX_COLORS[i % len(MIX_COLORS)]}"></span>'
-        for i, (label, share) in enumerate(items)
-    )
-    legend = "".join(
-        f'<span><span class="dot" style="background:{MIX_COLORS[i % len(MIX_COLORS)]}"></span>'
-        f'{escape(str(label))} {fmt_pct(share * 100)}</span>'
-        for i, (label, share) in enumerate(items)
-    )
-    return f'<div class="mix-bar">{bar}</div><div class="mix-legend">{legend}</div>'
-
-
-def _pills(name, title, choices, selected) -> str:
-    """A row of single-choice buttons. choices = [(value, label), ...]."""
-    buttons = ""
-    for value, label in choices:
-        on = str(value) == str(selected)
-        buttons += (f'<label class="{"on" if on else ""}"><input type="radio" name="{name}" '
-                    f'value="{escape(str(value))}"{" checked" if on else ""}>{escape(label)}</label>')
-    return f'<div class="fg"><label class="title">{title}</label><div class="pills">{buttons}</div></div>'
-
-
-def _select(name, title, values, selected, all_label, labels=None) -> str:
-    """A dropdown with an "All" choice. Shows how many choices are left."""
-    labels = labels or {}
-    opts = f'<option value="">{all_label}</option>' + "".join(
-        f'<option value="{escape(str(v))}"{" selected" if v == selected else ""}>'
-        f'{escape(str(labels.get(v, v)))}</option>'
-        for v in values)
-    return (f'<div class="fg"><label class="title">{title}<span class="count">{len(values)}</span></label>'
-            f'<select name="{name}">{opts}</select></div>')
-
-
-def _unavailable(title, reason) -> str:
-    """A filter Matt's build has that we can't offer yet, greyed out with the reason."""
-    return (f'<div class="fg"><label class="title">{title}</label>'
-            f'<select disabled title="{escape(reason)}"><option>{escape(reason)}</option></select></div>')
-
-
-def _filter_bar(view) -> str:
-    """The filter bar: a plain form, re-submitted whenever a choice changes."""
-    f, options, choices = view["filters"], view["options"], view["choices"]
-    as_at = view["as_at"]
-    ttm = f.tf == "ttm"
-
-    months = ""
-    for m in range(1, 13):
-        picked = ttm or m in f.months
-        dev = f.year == as_at.year and m == as_at.month and not as_at.is_month_end
-        title = ("Fixed by the trailing-twelve window" if ttm
-                 else "Part month – still in progress" if dev else MONTH_NAMES[m - 1])
-        css = " ".join(c for c in ("on" if picked else "", "off" if ttm else "",
-                                   "dev" if dev else "") if c)
-        box = "" if ttm else f'<input type="checkbox" name="m" value="{m}"{" checked" if picked else ""}>'
-        months += f'<label class="{css}" title="{title}">{box}{MONTH_NAMES[m - 1][0]}</label>'
-
-    years = "".join(f'<option value="{y}"{" selected" if y == f.year else ""}>{y}</option>'
-                    for y in reversed(choices["years"]))
-
     return f"""
-    <div class="filters">
-      <form method="get" action="/" id="filter-form">
-        {_pills("tf", "Timeframe", [("ytd", "YTD"), ("ttm", "TTM")], f.tf)}
-        <div class="fg"><label class="title">Year</label><select name="year">{years}</select></div>
-        <div class="fg"><label class="title">Months{" (fixed)" if ttm else ""}</label>
-          <div class="pills months">{months}</div></div>
-        {_pills("bt", "Business", [("", "All")] + [(v, v) for v in choices["business_types"]], f.bt)}
-        {_pills("mop", "Placement", [("", "All")] + [(v, v) for v in choices["placements"]], f.mop)}
-        {_pills("basis", "Date basis", [("inception", "Inception"), ("submission", "Submission")], f.basis)}
-        {_select("lob", "Line of business", options["line_of_business"], f.lob, "All LOBs")}
-        {_select("ent", "Entity", options["entity"], f.ent, "All entities")}
-        {_select("uw", "Underwriter", options["underwriter"], f.uw, "All underwriters",
-                 view["underwriter_names"])}
-        {_unavailable("Product", "Not available – needs Matt's product mapping")}
-        {_unavailable("Role", "Needs the HR file")}
-        {_unavailable("Tenure", "Needs the HR file")}
-        <a class="reset" href="/">Reset</a>
-        <noscript><button type="submit">Apply</button></noscript>
-      </form>
-    </div>
-    <script>
-      document.querySelectorAll('#filter-form input, #filter-form select').forEach(function (el) {{
-        el.addEventListener('change', function () {{ el.form.submit(); }});
-      }});
-    </script>"""
-
-
-def _scope_line(view) -> str:
-    """One line saying exactly which slice every figure on the page is for."""
-    f = view["filters"]
-    current, prior = view["result"]["current"], view["result"]["prior"]
-    parts = [f.lob or "All LOBs", f.ent or "All entities", f.bt or "All business",
-             f.mop or "All placement"]
-    if f.uw:
-        parts.append(view["underwriter_names"].get(f.uw, f.uw))
-    parts.append(current["period_label"] + (f" vs {prior['period_label']}" if prior else ""))
-    parts.append(("Submission" if f.basis == SUBMISSION else "Inception") + " date basis")
-    return " · ".join(escape(str(p)) for p in parts)
-
-
-def _hero(current, prior) -> str:
-    """The four headline figures across the top."""
-    stats = ""
-    for path, label, kind, good, recon_path in HERO:
-        now, was = _get(current, path), _get(prior, path)
-        flag = _reconciliation_flag(_get(current, recon_path)) if recon_path else ""
-        stats += f"""
-          <div class="stat">
-            <div class="value">{FORMATTERS[kind](now)}</div>
-            <div class="label">{label}{flag}</div>
-            <div class="change">{_change_html(now, was, kind, good)}
-              <span class="neutral">vs {FORMATTERS[kind](was)}</span></div>
-          </div>"""
-    return f'<div class="hero">{stats}</div>'
-
-
-def _section(title, subtitle, rows, current, prior) -> str:
-    """One block of figures: this period, the same period last year, and the change."""
-    now_label = escape(current["period_label"])
-    was_label = escape(prior["period_label"]) if prior else "Prior year"
-    body = ""
-    for path, label, kind, good, note in rows:
-        now, was = _get(current, path), _get(prior, path)
-        note_html = f'<span class="note">{escape(note)}</span>' if note else ""
-        body += (f'<tr><td>{escape(label)}{note_html}</td>'
-                 f'<td class="now">{FORMATTERS[kind](now)}</td>'
-                 f'<td class="was">{FORMATTERS[kind](was)}</td>'
-                 f'<td>{_change_html(now, was, kind, good)}</td></tr>')
-    sub = f'<div class="subtitle">{escape(subtitle)}</div>' if subtitle else ""
-    return f"""
-        <section>
-          <h2>{escape(title)}</h2>{sub}
-          <table class="figures">
-            <thead><tr><th>Figure</th><th>{now_label}</th><th>{was_label}</th><th>Change</th></tr></thead>
-            <tbody>{body}</tbody>
-          </table>
-        </section>"""
-
-
-def _underwriter_section(view) -> str:
-    """Every underwriter in the other filters, with their funnel, book and peer comparison."""
-    table = view["result"]["current"]["underwriters"]
-    f = view["filters"]
-    rows = ""
-    for r in table["rows"]:
-        picked = ' class="picked"' if r["underwriter"] == f.uw else ""
-        link = escape(f.query(uw=r["underwriter"]))
-        rows += (f'<tr{picked}><td><a href="{link}">{escape(str(r["name"]))}</a></td>'
-                 f'<td>{fmt_int(r["submissions"])}</td><td>{fmt_ratio_pct(r["quote_rate"])}</td>'
-                 f'<td>{fmt_int(r["binds"])}</td><td>{fmt_ratio_pct(r["bind_rate"])}</td>'
-                 f'<td>{fmt_money(r["premium"])}</td><td>{fmt_multiple(r["premium_vs_peer_median"])}</td>'
-                 f'<td>{fmt_pct(r["uw_margin_pct"])}</td></tr>')
-    return f"""
-        <section>
-          <h2>Underwriters</h2>
-          <div class="subtitle">{len(table["rows"])} underwriters in the other filters.
-            Peer median premium {fmt_money(table["peer_median_premium"])}. Click a name to
-            filter the whole page to them. Names are matched after tidying capitals,
-            punctuation and spaces only, so one person typed two ways shows twice
-            (workbook tab 3, Rule 5).</div>
-          <div class="uw-wrap">
-          <table class="uw">
-            <thead><tr><th>Underwriter</th><th>Submissions</th><th>Q/S</th><th>Binds</th><th>B/Q</th>
-              <th>Premium</th><th>vs peer median</th><th>UW Margin %</th></tr></thead>
-            <tbody>{rows}</tbody>
-          </table>
+        <details class="menu{" changed" if changed else ""}">
+          <summary><span class="menu-label">{escape(label)}</span>
+            <span class="menu-value">{escape(value_text)}</span></summary>
+          <div class="panel{" wide" if wide else ""}" role="dialog" aria-label="{escape(label)}">
+            {panel}
+            <div class="panel-actions">
+              <button type="button" class="btn quiet" data-cancel>Cancel</button>
+              <button type="submit" class="btn primary">Apply</button>
+            </div>
           </div>
-        </section>"""
+        </details>"""
 
 
-def _body(view) -> str:
-    """Everything below the filter bar."""
-    current, prior = view["result"]["current"], view["result"]["prior"]
-    notices = ""
-    if view["filters"].cleared:
-        cleared = ", ".join(escape(str(view["underwriter_names"].get(v, v)))
-                            for v in view["filters"].cleared)
-        notices += (f'<div class="notice">Cleared {cleared}: not available with the other '
-                    f'filters picked.</div>')
-    if current["basis_note"]:
-        notices += f'<div class="notice">{escape(current["basis_note"])}</div>'
+def _list_menu(name, label, all_label, noun, values, selected, default, labels=None) -> str:
+    """A menu choosing one value from a list, with a search box on long lists."""
+    labels = labels or {}
+    search = ""
+    if len(values) > SEARCH_FROM:
+        search = (f'<input type="search" class="panel-search" data-search '
+                  f'placeholder="Search {len(values)} {noun}" aria-label="Search {noun}">')
+    choices = _choice(name, "", all_label, checked=not selected, extra_class="keep")
+    choices += "".join(_choice(name, v, labels.get(v, v), checked=v == selected) for v in values)
+    panel = (f'<div class="panel-title">{escape(label)}</div>'
+             f'<div class="panel-note">{len(values)} available with your other filters</div>'
+             f'{search}<div class="choices">{choices}</div>')
+    shown = labels.get(selected, selected) if selected else all_label
+    return _menu(label, shown, panel, changed=selected != default)
 
-    sections = ""
-    for title, subtitle, rows in SECTIONS:
-        if title.startswith("Productivity"):
-            subtitle = current["productivity_stand_in"]["note"]
-        sections += _section(title, subtitle, rows, current, prior)
-        if title == "What kind of book we write" and current["composition"]["placement_mix"]:
-            label = escape(current["period_label"])
-            sections += f"""
-        <section style="margin-top:20px">
-          <div class="subtitle">New vs. Renewal mix, {label}, share of premium</div>
-          {_mix_bar(current["composition"]["new_vs_renewal_mix"])}
-          <div class="subtitle" style="margin-top:18px">Placement mix, {label}, share of premium</div>
-          {_mix_bar(current["composition"]["placement_mix"])}
-        </section>"""
 
+def _period_menu(view) -> str:
+    """Period: presets, a quarter, or picked months; the year; and the date basis."""
+    f, as_at = view["filters"], view["as_at"]
+    _, last_month = last_complete_month(as_at)
+    current = view["result"]["current"]
+
+    def span(period):
+        state = dataclasses.replace(f, period=period)
+        return describe_period(state.to_scope(as_at))
+
+    def pill(name, value, text, checked, sub="", kind="radio", css="", title="", data=""):
+        sub_html = f"<small>{escape(sub)}</small>" if sub else ""
+        title_attr = f' title="{escape(title)}"' if title else ""
+        return (f'<label class="pill {css}"{title_attr}>'
+                f'<input type="{kind}" name="{name}" value="{value}"{" checked" if checked else ""} {data}>'
+                f'<span>{escape(text)}{sub_html}</span></label>')
+
+    quick = "".join(pill("period", v, PERIOD_NAMES[v], f.period == v, span(v), data="data-preset")
+                    for v in ("ytd", "ttm", "full"))
+    quarters = "".join(pill("period", f"q{q}", f"Q{q}", f.period == f"q{q}", data="data-preset")
+                       for q in range(1, 5))
+    this_year = f.year == as_at.year
+    months = "".join(
+        pill("m", m, MONTH_NAMES[m - 1], f.period == "custom" and m in f.months, kind="checkbox",
+             css="soon" if this_year and m > last_month else "",
+             title="No complete data yet" if this_year and m > last_month else "", data="data-month")
+        for m in range(1, 13))
+    years = "".join(f'<option value="{y}"{" selected" if y == f.year else ""}>{y}</option>'
+                    for y in reversed(view["choices"]["years"]))
+    basis = (pill("basis", "inception", "Inception date", f.basis == INCEPTION, "When cover starts")
+             + pill("basis", "submission", "Submission date", f.basis == SUBMISSION,
+                    "DSR figures only"))
+    panel = f"""
+            <div class="panel-head">
+              <div class="panel-title">Period</div>
+              <label class="year-field">Year <select name="year">{years}</select></label>
+            </div>
+            <div class="pill-grid three">{quick}</div>
+            <div class="group-label">A quarter</div>
+            <div class="pill-grid four">{quarters}</div>
+            <div class="group-label">Or pick months</div>
+            <input type="radio" name="period" value="custom" data-custom hidden
+              {" checked" if f.period == "custom" else ""}>
+            <div class="pill-grid six">{months}</div>
+            <div class="group-label">Count a policy in the month of its</div>
+            <div class="pill-grid two">{basis}</div>
+            <div class="panel-note">Every figure is compared with the same months a year earlier.
+              Submission date works for DSR figures only - RBS has no submission date.</div>"""
+    name = PERIOD_NAMES[f.period]
+    value = current["period_label"] if f.period == "custom" else f"{name} · {current['period_label']}"
+    if f.basis == SUBMISSION:
+        value += " · by submission"
+    changed = (f.period, f.basis) != ("ytd", INCEPTION) or f.year != as_at.year
+    return _menu("Period", value, panel, changed, wide=True)
+
+
+def _choice_menu(name, label, selected, default, choices, hints) -> str:
+    """A menu for a short fixed list (Business, Placement), each choice explained."""
+    options = "".join(_choice(name, value, value or "All", hints.get(value, ""), checked=value == selected)
+                      for value in [""] + list(choices))
+    panel = f'<div class="panel-title">{escape(label)}</div><div class="choices">{options}</div>'
+    return _menu(label, selected or "All", panel, changed=selected != default)
+
+
+def _toolbar(view) -> str:
+    """The filter toolbar: one button per filter, each opening its own small menu."""
+    f, options, choices = view["filters"], view["options"], view["choices"]
+    default = default_state(view["as_at"])
     return f"""
-        <div class="scope-line">{_scope_line(view)}</div>
-        {notices}
-        {_hero(current, prior)}
-        {sections}
-        {_underwriter_section(view)}"""
+    <div class="toolbar">
+      <form method="get" action="/" id="filter-form">
+        {_period_menu(view)}
+        {_choice_menu("bt", "Business", f.bt, default.bt, choices["business_types"], BUSINESS_HINTS)}
+        {_choice_menu("mop", "Placement", f.mop, default.mop, choices["placements"], PLACEMENT_HINTS)}
+        {_list_menu("lob", "Line of business", "All lines", "lines", options["line_of_business"],
+                    f.lob, default.lob)}
+        {_list_menu("ent", "Entity", "All entities", "entities", options["entity"], f.ent, default.ent)}
+        {_list_menu("uw", "Underwriter", "All underwriters", "underwriters", options["underwriter"],
+                    f.uw, default.uw, view["underwriter_names"])}
+        <noscript><button type="submit" class="btn primary">Apply</button></noscript>
+      </form>
+    </div>"""
+
+
+TOOLBAR_SCRIPT = """
+  <script>
+  (function () {
+    var form = document.getElementById('filter-form');
+    if (!form) return;
+    var menus = Array.prototype.slice.call(form.querySelectorAll('details.menu'));
+
+    function closeAll(except) {
+      menus.forEach(function (m) { if (m !== except) m.open = false; });
+    }
+    function discard() { form.reset(); filterAll(''); }
+
+    // One menu open at a time; leaving a menu without Apply discards its changes,
+    // so Apply only ever sends what's visible in the menu you're looking at.
+    menus.forEach(function (menu) {
+      menu.addEventListener('toggle', function () {
+        if (menu.open) {
+          if (menus.some(function (m) { return m !== menu && m.open; })) discard();
+          closeAll(menu);
+          // Near the right edge of the window, open the menu leftwards instead.
+          var panel = menu.querySelector('.panel');
+          panel.classList.remove('flip');
+          if (panel.getBoundingClientRect().right > window.innerWidth - 8) panel.classList.add('flip');
+          var search = menu.querySelector('[data-search]');
+          if (search) search.focus();
+        }
+      });
+    });
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('details.menu') && menus.some(function (m) { return m.open; })) {
+        discard(); closeAll();
+      }
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && menus.some(function (m) { return m.open; })) { discard(); closeAll(); }
+    });
+    form.querySelectorAll('[data-cancel]').forEach(function (b) {
+      b.addEventListener('click', function () { discard(); closeAll(); });
+    });
+
+    // Search boxes narrow their own list; "All" and the current choice stay visible.
+    function filterList(search) {
+      var q = search.value.trim().toLowerCase();
+      search.parentNode.querySelectorAll('.choice').forEach(function (c) {
+        var keep = c.classList.contains('keep') || c.querySelector('input').checked;
+        c.hidden = q && !keep && c.textContent.toLowerCase().indexOf(q) === -1;
+      });
+    }
+    function filterAll(value) {
+      form.querySelectorAll('[data-search]').forEach(function (s) { s.value = value; filterList(s); });
+    }
+    form.querySelectorAll('[data-search]').forEach(function (s) {
+      s.addEventListener('input', function () { filterList(s); });
+    });
+
+    // Ticking a month switches the period to "Picked months"; choosing a quick
+    // pick or a quarter clears the ticked months, so only one choice ever shows.
+    var custom = form.querySelector('[data-custom]');
+    form.querySelectorAll('[data-month]').forEach(function (box) {
+      box.addEventListener('change', function () { custom.checked = true; });
+    });
+    form.querySelectorAll('[data-preset]').forEach(function (radio) {
+      radio.addEventListener('change', function () {
+        form.querySelectorAll('[data-month]').forEach(function (box) { box.checked = false; });
+      });
+    });
+
+    // Months only travel in the address when "Picked months" is the choice; then show progress.
+    form.addEventListener('submit', function () {
+      var custom = form.querySelector('[data-custom]').checked;
+      form.querySelectorAll('[data-month]').forEach(function (box) { box.disabled = !custom; });
+      document.body.classList.add('loading');
+    });
+    document.querySelectorAll('.chip, .clear').forEach(function (a) {
+      a.addEventListener('click', function () { document.body.classList.add('loading'); });
+    });
+  })();
+  </script>"""
+
+
+def _page_cards(view) -> dict:
+    """Help cards whose content depends on this page's figures."""
+    return {"guide": GUIDE_CARD, **reconciliation_cards(view["result"]["current"])}
 
 
 def render_dashboard(view: dict, last_run: str, error: str) -> str:
@@ -628,8 +703,8 @@ def render_dashboard(view: dict, last_run: str, error: str) -> str:
           refresh by hand.</div>
         </div>"""
     else:
-        filters = _filter_bar(view)
-        body = _body(view)
+        filters = _toolbar(view)
+        body = panel_body(view)
 
     as_at = f' &middot; data as at {view["as_at"]:%d %b %Y}' if view else ""
     # Refreshes quickly while waiting for the first result, then every few
@@ -641,8 +716,8 @@ def render_dashboard(view: dict, last_run: str, error: str) -> str:
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="refresh" content="{refresh}">
-  <title>UW Productivity Dashboard</title>
-  <style>{CSS}</style>
+  <title>{escape(page_title(view)) if view else "UW Productivity Dashboard"}</title>
+  <style>{CSS}{HELP_CSS}{INSIGHTS_CSS}{CHARTS_CSS}{PANELS_CSS}</style>
 </head>
 <body>
   <header>
@@ -654,5 +729,7 @@ def render_dashboard(view: dict, last_run: str, error: str) -> str:
     {body}
   </main>
   <footer>Confidential &middot; internal use only</footer>
+  {TOOLBAR_SCRIPT if view else ""}
+  {help_templates(_page_cards(view)) + HELP_SCRIPT + CHARTS_SCRIPT + PANELS_SCRIPT if view else ""}
 </body>
 </html>"""

@@ -39,6 +39,35 @@ def binds_from_rbs(rbs: pd.DataFrame, scope: Scope) -> int:
     return apply_scope(rbs, scope)["policy_reference"].nunique()
 
 
+def binds_not_in_dsr(dsr: pd.DataFrame, rbs: pd.DataFrame, scope: Scope) -> dict:
+    """How much of the bound business DSR has no record of at all.
+
+    B/Q and B/S divide RBS binds by DSR quotes and submissions (tab 4). That
+    only reads as a funnel if every bind also exists in DSR - and on the real
+    extract some don't, under any status or month. Those policies are in the
+    top of the fraction but can never be in the bottom, so both rates come out
+    too high, and on a narrow slice or one underwriter they can pass 100%.
+
+    Returns the size of the problem for the current filters:
+        policies        RBS bind policies with no DSR row anywhere
+        premium_share   their share of bound premium
+        bind_rate       B/Q counting only binds DSR knows about
+    """
+    bound = apply_scope(rbs, scope)
+    policies = set(bound["policy_reference"].dropna())
+    known = set(dsr["policy_reference"].dropna())          # every DSR row, any period
+    missing = policies - known
+    premium = bound["premium"].sum()
+    missing_premium = bound.loc[bound["policy_reference"].isin(missing), "premium"].sum()
+    quoted = quotes(dsr, scope)
+    return {
+        "policies": len(missing),
+        "of_binds": len(policies),
+        "premium_share": missing_premium / premium if premium else None,
+        "bind_rate": (len(policies) - len(missing)) / quoted if quoted else None,
+    }
+
+
 def quote_rate(dsr: pd.DataFrame, scope: Scope) -> float:
     """Tab 4, "Q/S": Quotes / Submissions. Blank (None, not zero) if no submissions."""
     s = submissions(dsr, scope)

@@ -19,14 +19,14 @@ from dataclasses import dataclass
 import pandas as pd
 
 from data_sources.base import DataSource
-from scope.filter import Scope, INCEPTION, add_filter_columns
+from scope.filter import Scope, INCEPTION, add_filter_columns, apply_scope
 from scope.period import data_as_at, prior_year_scope, describe_period
 from ingest.clean_dsr import clean_dsr
 from ingest.clean_rbs import clean_rbs
 from ingest.align_reports import align_business_type
-from ingest.underwriter_names import display_names
+from ingest.underwriter_names import display_names, possible_duplicates
 from reconcile.cross_check import reconcile
-from metrics import funnel, premium, quality, composition, headcount, underwriters
+from metrics import composition, drivers, funnel, headcount, premium, quality, trends, underwriters
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +55,7 @@ class PreparedData:
     rbs: pd.DataFrame
     as_at: pd.Timestamp
     underwriter_names: dict
+    possible_duplicates: dict = None  # {underwriter key: [names that may be the same person]}
 
 
 def _cleaned_columns_only(df: pd.DataFrame) -> pd.DataFrame:
@@ -80,8 +81,9 @@ def prepare(data_source: DataSource) -> PreparedData:
     dsr = add_filter_columns(_cleaned_columns_only(dsr))
     rbs = add_filter_columns(_cleaned_columns_only(rbs))
 
-    return PreparedData(dsr=dsr, rbs=rbs, as_at=data_as_at(dsr),
-                        underwriter_names=display_names(dsr, rbs))
+    names = display_names(dsr, rbs)
+    return PreparedData(dsr=dsr, rbs=rbs, as_at=data_as_at(dsr), underwriter_names=names,
+                        possible_duplicates=possible_duplicates(names))
 
 
 def compute(data: PreparedData, scope: Scope) -> dict:
@@ -122,6 +124,7 @@ def compute(data: PreparedData, scope: Scope) -> dict:
             "binds": binds_check.kept_value if binds_check else None,
             "binds_reconciliation": binds_check,
             "quote_rate": funnel.quote_rate(dsr, scope),
+            "binds_not_in_dsr": from_rbs(funnel.binds_not_in_dsr, dsr, rbs, scope),
             "bind_rate": from_rbs(funnel.bind_rate, dsr, rbs, scope),
             "end_to_end_win_rate": from_rbs(funnel.end_to_end_win_rate, dsr, rbs, scope),
         },
@@ -138,6 +141,8 @@ def compute(data: PreparedData, scope: Scope) -> dict:
             "uw_margin_pct": from_rbs(quality.uw_margin_pct, rbs, scope),
             "margin_cover": from_rbs(quality.margin_cover, rbs, scope),
             "commission_cover": from_rbs(quality.commission_cover, rbs, scope),
+            "uw_margin_pct_recorded_commission": from_rbs(
+                quality.uw_margin_pct_recorded_commission, rbs, scope),
             "attachment_point_excess": from_rbs(quality.attachment_point_excess, rbs, scope),
             "attachment_point_primary": from_rbs(quality.attachment_point_primary, rbs, scope),
             "median_limit": from_rbs(quality.median_limit, rbs, scope),
@@ -180,11 +185,25 @@ def compute(data: PreparedData, scope: Scope) -> dict:
 
 
 def compute_with_comparison(data: PreparedData, scope: Scope) -> dict:
-    """The selected period and the same period one year earlier, side by side."""
-    prior = prior_year_scope(scope)
+    """The selected period and the same period one year earlier, side by side,
+    plus what drove the change in Premium per Active Underwriter between them,
+    and month-by-month trends around the period.
+    """
+    prior_scope = prior_year_scope(scope)
+    current = compute(data, scope)
+    prior = compute(data, prior_scope) if prior_scope is not None else None
+    # A comparison year the extract doesn't cover would otherwise read as a
+    # book that collapsed to zero: no rows at all means "nothing to compare".
+    missing_prior = None
+    if prior is not None and not prior["funnel"]["submissions"] and not prior["funnel"]["binds"]:
+        if not len(apply_scope(data.dsr, prior_scope)) and not len(apply_scope(data.rbs, prior_scope)):
+            missing_prior, prior = prior_scope.year, None
     return {
-        "current": compute(data, scope),
-        "prior": compute(data, prior) if prior is not None else None,
+        "current": current,
+        "prior": prior,
+        "missing_prior_year": missing_prior,
+        "drivers": drivers.productivity_drivers(current, prior) if scope.date_basis == INCEPTION else None,
+        "trends": trends.monthly_trends(data.dsr, data.rbs, scope, data.as_at),
     }
 
 
